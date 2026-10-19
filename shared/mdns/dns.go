@@ -85,7 +85,7 @@ func appendName(b []byte, name string) ([]byte, error) {
 			if len(label) == 0 || len(label) > 63 {
 				return nil, fmt.Errorf("mdns: invalid label %q in %q", label, name)
 			}
-			b = append(b, byte(len(label)))
+			b = append(b, byte(len(label))) //nolint:gosec // G115: 1..63, checked above
 			b = append(b, label...)
 		}
 	}
@@ -138,7 +138,7 @@ func appendRecord(b []byte, r Record) ([]byte, error) {
 			if len(s) > 255 {
 				return nil, fmt.Errorf("mdns: TXT string too long: %q", s)
 			}
-			b = append(b, byte(len(s)))
+			b = append(b, byte(len(s))) //nolint:gosec // G115: <= 255, checked above
 			b = append(b, s...)
 		}
 	default:

@@ -1,7 +1,11 @@
 package client
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -26,17 +30,46 @@ func TestPinnedTLSConfig(t *testing.T) {
 		t.Fatal("empty pin must use system verification")
 	}
 	der := []byte("not really a certificate, but hashing does not care")
+	state := func(raw []byte) tls.ConnectionState {
+		return tls.ConnectionState{PeerCertificates: []*x509.Certificate{{Raw: raw}}}
+	}
 	fp := Fingerprint(der)
 	conf := PinnedTLSConfig(fp)
-	if err := conf.VerifyPeerCertificate([][]byte{der}, nil); err != nil {
+	if conf.VerifyPeerCertificate != nil || conf.VerifyConnection == nil {
+		t.Fatal("the pin must be checked in VerifyConnection, which also runs on resumed sessions")
+	}
+	if err := conf.VerifyConnection(state(der)); err != nil {
 		t.Fatal(err)
 	}
 	// Lowercase / no-colon forms of the same pin also match.
-	if err := PinnedTLSConfig(lowerNoColons(fp)).VerifyPeerCertificate([][]byte{der}, nil); err != nil {
+	if err := PinnedTLSConfig(lowerNoColons(fp)).VerifyConnection(state(der)); err != nil {
 		t.Fatal(err)
 	}
-	if err := conf.VerifyPeerCertificate([][]byte{[]byte("other")}, nil); !errors.Is(err, ErrCertChanged) {
+	if err := conf.VerifyConnection(state([]byte("other"))); !errors.Is(err, ErrCertChanged) {
 		t.Fatalf("different cert: %v", err)
+	}
+	if err := conf.VerifyConnection(tls.ConnectionState{}); err == nil {
+		t.Fatal("no certificate must fail")
+	}
+}
+
+// Against a real TLS server: the right pin connects, a wrong one doesn't.
+func TestPinnedTLSAgainstServer(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {}))
+	defer ts.Close()
+	get := func(pin string) error {
+		c := &http.Client{Transport: &http.Transport{TLSClientConfig: PinnedTLSConfig(pin)}}
+		resp, err := c.Get(ts.URL)
+		if err == nil {
+			_ = resp.Body.Close()
+		}
+		return err
+	}
+	if err := get(Fingerprint(ts.Certificate().Raw)); err != nil {
+		t.Fatalf("right pin: %v", err)
+	}
+	if err := get(Fingerprint([]byte("some other certificate"))); !errors.Is(err, ErrCertChanged) {
+		t.Fatalf("wrong pin: %v", err)
 	}
 }
 

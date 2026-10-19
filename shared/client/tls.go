@@ -48,12 +48,14 @@ func PinnedTLSConfig(pin string) *tls.Config {
 	want := normalizeFingerprint(pin)
 	return &tls.Config{
 		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: true, //nolint:gosec // replaced by VerifyPeerCertificate below (certificate pinning)
-		VerifyPeerCertificate: func(raw [][]byte, _ [][]*x509.Certificate) error {
-			if len(raw) == 0 {
+		InsecureSkipVerify: true, //nolint:gosec // replaced by VerifyConnection below (certificate pinning)
+		// VerifyConnection, not VerifyPeerCertificate: it also runs on
+		// resumed TLS sessions, so a resumed session can't skip the pin.
+		VerifyConnection: func(cs tls.ConnectionState) error {
+			if len(cs.PeerCertificates) == 0 {
 				return errors.New("server sent no certificate")
 			}
-			if normalizeFingerprint(Fingerprint(raw[0])) != want {
+			if normalizeFingerprint(Fingerprint(cs.PeerCertificates[0].Raw)) != want {
 				return ErrCertChanged
 			}
 			return nil

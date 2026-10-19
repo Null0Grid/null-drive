@@ -93,7 +93,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			} else {
 				hdr.Set("Cache-Control", "no-cache")
 			}
-			http.ServeFileFS(w, r, h.files, name)
+			http.ServeFileFS(w, r, h.files, name) //nolint:gosec // G703: name is path.Clean'ed and served from the embedded fs.FS, which rejects ".."
 			return
 		}
 		// A missing file with an extension is a real 404 (a broken asset

@@ -207,7 +207,9 @@ func isHTTPS(r *http.Request) bool {
 }
 
 func setSessionCookie(w http.ResponseWriter, r *http.Request, tok string, expires time.Time) {
-	http.SetCookie(w, &http.Cookie{
+	// Secure follows the request: plain-HTTP LAN installs need the cookie,
+	// and behind HTTPS it is always set. HttpOnly and SameSite=Strict always.
+	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: Secure is set whenever the request is HTTPS (see above)
 		Name:     api.SessionCookieName,
 		Value:    tok,
 		Path:     "/",
@@ -238,7 +240,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		s.internalError(w, r, err)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{
+	http.SetCookie(w, &http.Cookie{ //nolint:gosec // G124: clears the cookie; same attributes as setSessionCookie
 		Name: api.SessionCookieName, Value: "", Path: "/", MaxAge: -1,
 		HttpOnly: true, Secure: isHTTPS(r), SameSite: http.SameSiteStrictMode,
 	})
