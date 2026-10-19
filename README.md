@@ -55,7 +55,7 @@ API contracts for the other apps: [NOTES-BACKUP.md](docs/NOTES-BACKUP.md), [NOTE
 
 ## Build from source
 
-Requires Go 1.24+ and Node 22+.
+Requires Go 1.24+ and Node 22+. Releases are built with Go 1.26.9, the `toolchain` in `go.mod` (Go downloads it automatically), which has the current standard-library security fixes.
 
 ```bash
 git clone https://github.com/Null0Grid/null-drive && cd null-drive

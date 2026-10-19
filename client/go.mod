@@ -6,7 +6,7 @@ module github.com/Null0Grid/null-drive/client
 
 go 1.24.1
 
-toolchain go1.24.13
+toolchain go1.26.9
 
 require (
 	fyne.io/systray v1.11.0

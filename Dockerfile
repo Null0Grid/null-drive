@@ -15,7 +15,7 @@
 # no QEMU emulation and is roughly as fast as a single-arch one.
 
 ARG NODE_VERSION=22
-ARG GO_VERSION=1.24
+ARG GO_VERSION=1.26
 
 # ---------- 1. UI ----------
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS ui
