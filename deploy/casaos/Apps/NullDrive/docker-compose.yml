@@ -1,0 +1,87 @@
+# Null Drive for CasaOS / ZimaOS (AppStore v2 format).
+# Spec: https://github.com/IceWhaleTech/CasaOS-AppStore/blob/main/docs/specs/compose-and-x-casaos.md
+# Validate locally: docker compose -f docker-compose.yml config -q
+name: nulldrive
+
+services:
+  nulldrive:
+    image: ghcr.io/OWNER/nulldrive:5.0.0
+    container_name: nulldrive
+    restart: unless-stopped
+    # CasaOS creates AppData folders owned by root, and the image's default
+    # user (65532) could not write to them. Running as root *without any
+    # capabilities* keeps that working while staying locked down: with
+    # CAP_DAC_OVERRIDE dropped, root can still only write where it owns
+    # the files.
+    user: "0:0"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    stop_grace_period: 30s
+    environment:
+      NULLDRIVE_DATA_DIR: /data
+      NULLDRIVE_PORT: "8080"
+      NULLDRIVE_LOG_LEVEL: info
+    ports:
+      - target: 8080
+        published: "8080"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: /DATA/AppData/nulldrive/data
+        target: /data
+    healthcheck:
+      test: ["CMD", "/nulldrive", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+x-casaos:
+  id: io.github.OWNER.nulldrive
+  main: nulldrive
+  index: /
+  port_map: "8080"
+  scheme: http
+  icon: https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/assets/icon.png
+  thumbnail: https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-list-dark.png
+  screenshot_link:
+    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-list-dark.png
+    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-grid-dark.png
+    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/setup-1-welcome.png
+    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/settings-dark.png
+  title:
+    en_US: Null Drive
+  tagline:
+    en_US: Self-hosted file sync. Like Dropbox, but you own the server.
+  description:
+    en_US: |
+      Null Drive stores your files on this machine and gives you a fast web app to browse,
+      upload, move and share them, with desktop sync clients on the way.
+
+      - One small container with a built-in web UI and database
+      - Edits from two devices never silently overwrite each other
+      - Files are de-duplicated and stored by content hash
+      - Works on phones, in dark or light mode
+  tips:
+    before_install:
+      en_US: |
+        After installing, open the app and complete the setup wizard right away:
+        until an admin account exists, anyone who can reach the page can create it.
+        Files are stored in /DATA/AppData/nulldrive/data.
+  author: OWNER
+  developer: OWNER
+  category: Productivity
+  architectures:
+    - amd64
+    - arm64
+  version: "5.0.0"
+  update_at: "2026-10-19"
+  release_notes:
+    en_US: "5.0: Null Grid release. Search for Null Search, nulldrive:// links, Null Notes backup, two-way sync and end-to-end encrypted sync."
+  website: https://github.com/OWNER/nulldrive
+  repo: https://github.com/OWNER/nulldrive
+  support: https://github.com/OWNER/nulldrive/issues
+  docs: https://github.com/OWNER/nulldrive/blob/main/docs/INSTALL.md

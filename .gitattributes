@@ -1,0 +1,13 @@
+# Normalize text to LF in the repository; scripts must stay LF even when
+# cloned on Windows (Git Bash runs them).
+* text=auto eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.ico binary
+*.icns binary
+*.mp4 binary
+*.webp binary
+*.syso binary

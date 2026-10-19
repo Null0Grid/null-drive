@@ -1,0 +1,15 @@
+# Keep the build context small and the cache stable: only what the
+# Dockerfile COPYs matters.
+**
+!go.mod
+!go.sum
+!server/
+!shared/
+!ui/
+ui/node_modules/
+ui/test-results/
+ui/playwright-report/
+ui/.e2e-data/
+server/internal/webui/dist/*
+!server/internal/webui/dist/.gitkeep
+**/*_test.go

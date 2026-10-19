@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+  Null Drive: Unraid Community Applications template.
+  Field reference: https://ca.unraid.net/submit/help/xml-field-reference
+  Runs as nobody:users (99:100), Unraid's appdata owner, with all
+  capabilities dropped and a read-only root filesystem.
+-->
+<Container version="2">
+  <Name>NullDrive</Name>
+  <Repository>ghcr.io/OWNER/nulldrive:latest</Repository>
+  <Registry>https://github.com/OWNER/nulldrive/pkgs/container/nulldrive</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/OWNER/nulldrive/issues</Support>
+  <Project>https://github.com/OWNER/nulldrive</Project>
+  <Overview>Self-hosted file sync: like Dropbox, but you own the server. One small container with a built-in web UI (setup wizard, file browser, drag-and-drop uploads) and an embedded database. Edits from two devices never silently overwrite each other. Open the WebUI after installing and finish the setup wizard right away: until an admin exists, anyone who can reach the page can create it.</Overview>
+  <Category>Cloud: Productivity: Backup:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/unraid/nulldrive.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/assets/icon.png</Icon>
+  <ExtraParams>--user 99:100 --read-only --cap-drop=ALL --security-opt no-new-privileges --stop-timeout 30</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="WebUI port" Target="8080" Default="8080" Mode="tcp" Description="Port for the web interface and API." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/nulldrive" Mode="rw" Description="Database and all uploaded files. Put it on the array or a cache pool you back up." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/nulldrive</Config>
+  <Config Name="Log level" Target="NULLDRIVE_LOG_LEVEL" Default="info|debug|warn|error" Mode="" Description="Log verbosity." Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
+</Container>

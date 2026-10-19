@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Null Drive for the Microsoft Store (MSIX). Rendered by scripts/build-msix.sh,
+  which fills in the {{…}} values:
+
+    {{IDENTITY_NAME}}   Package/Identity/Name from Partner Center
+                        (Product management › Product identity)
+    {{PUBLISHER}}       Package/Identity/Publisher, e.g. CN=1A2B3C4D-…
+    {{PUBLISHER_DISPLAY_NAME}}  Package/Properties/PublisherDisplayName
+    {{VERSION}}         four parts, the last one 0 (the Store requires it)
+
+  What the manifest does for the app (see docs/DESIGN.md › Microsoft Store):
+   - runFullTrust: Null Drive is an ordinary Win32 program (Wails + WebView2),
+     packaged, not sandboxed.
+   - windows.protocol: nulldrive:// links run NullDrive.exe with the link
+     after its url flag (Parameters below), the same command the installer
+     registers, so the app treats the link as untrusted input.
+   - windows.startupTask: inside a package the HKCU Run key the app writes
+     elsewhere is private to the package and ignored at sign-in, so starting
+     at sign-in is declared here; Windows enables it after the first launch
+     and the user controls it in Settings › Apps › Startup. uap10:Parameters
+     (Windows 10 2004+) starts it in the tray.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap10 desktop rescap">
+
+  <Identity Name="{{IDENTITY_NAME}}" Publisher="{{PUBLISHER}}" Version="{{VERSION}}" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Null Drive</DisplayName>
+    <PublisherDisplayName>{{PUBLISHER_DISPLAY_NAME}}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Keeps a folder on this PC in sync with your own Null Drive server.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="NullDrive" Executable="NullDrive.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Null Drive"
+        Description="Self-hosted file sync"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="Null Drive" />
+      </uap:VisualElements>
+      <Extensions>
+        <uap3:Extension Category="windows.protocol">
+          <uap3:Protocol Name="nulldrive" Parameters="--url &quot;%1&quot;">
+            <uap:DisplayName>Null Drive link</uap:DisplayName>
+          </uap3:Protocol>
+        </uap3:Extension>
+        <desktop:Extension Category="windows.startupTask" Executable="NullDrive.exe" EntryPoint="Windows.FullTrustApplication" uap10:Parameters="--hidden">
+          <desktop:StartupTask TaskId="NullDriveStartup" Enabled="true" DisplayName="Null Drive" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

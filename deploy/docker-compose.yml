@@ -1,0 +1,66 @@
+# Null Drive: docker compose up -d
+#
+# Then open http://<this machine>:8080 and complete the setup wizard.
+# Finish setup BEFORE exposing the port to the internet: until an admin
+# exists, whoever opens the page first can create it.
+
+name: nulldrive
+
+services:
+  nulldrive:
+    image: ghcr.io/OWNER/nulldrive:latest   # pin a version (e.g. :v0.3.0) for predictable upgrades
+    container_name: nulldrive
+    restart: unless-stopped
+
+    ports:
+      # host:container. Change the left side to use another port on the host.
+      - "8080:8080"
+
+    # LAN discovery (desktop apps find the server automatically) needs the
+    # container on the host network, since multicast does not cross Docker's
+    # bridge. Linux only. Uncomment and remove `ports:` above:
+    # network_mode: host
+
+    environment:
+      # Log verbosity: debug | info | warn | error
+      NULLDRIVE_LOG_LEVEL: info
+      # Behind a reverse proxy: take client IPs from X-Forwarded-For.
+      # NULLDRIVE_TRUST_PROXY: "on"
+      # Disable LAN discovery (mDNS) regardless of the Settings toggle.
+      # NULLDRIVE_MDNS: "off"
+      # Set by the image; only change if you also change the volume/port below.
+      # NULLDRIVE_DATA_DIR: /data
+      # NULLDRIVE_PORT: "8080"
+
+    volumes:
+      # Named volume (recommended): Docker manages the location and
+      # permissions just work.
+      - nulldrive-data:/data
+      # Bind mount alternative, to choose where files live on the host:
+      #   - /srv/nulldrive:/data
+      # The folder must be writable by the container user (uid 65532):
+      #   sudo mkdir -p /srv/nulldrive && sudo chown 65532:65532 /srv/nulldrive
+      # or run as the folder's owner instead by uncommenting `user:` below.
+
+    # user: "1000:1000"
+
+    # The server finishes in-flight uploads for up to 30s on shutdown;
+    # give it that long before Docker sends SIGKILL (default is 10s).
+    stop_grace_period: 30s
+
+    # Hardening: the binary needs no privileges and writes only to /data.
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+    # Health is also built into the image; repeated here for visibility.
+    healthcheck:
+      test: ["CMD", "/nulldrive", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+volumes:
+  nulldrive-data:

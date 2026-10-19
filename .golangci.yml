@@ -1,0 +1,38 @@
+version: "2"
+
+linters:
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - revive
+    - unconvert
+    - unparam
+  settings:
+    gosec:
+      excludes:
+        - G104 # unhandled errors: covered by errcheck
+    revive:
+      rules:
+        - name: exported
+          disabled: true # internal packages; doc comments where they add value
+  exclusions:
+    presets:
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters: [gosec, unparam]
+      # The sync engine works on the user's own folder: it must create
+      # folders with normal user permissions (0755, umask applies) and open
+      # files whose paths come from scanning that folder. Path safety there
+      # is enforced by shared/pathutil, not by these generic rules.
+      - path: shared/sync/
+        linters: [gosec]
+        text: "G301|G302|G304|G306"
+
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

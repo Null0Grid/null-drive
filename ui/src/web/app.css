@@ -1,0 +1,54 @@
+/* Web-app-only layout helpers (the shared look lives in src/lib/styles). */
+/* The web app is served by the server, so it wears the server's logo:
+   red slashes (the desktop app keeps the cyan ones). */
+:root {
+  --logo-slash: var(--brand-server);
+  --logo-slash-glow: var(--brand-server-line);
+}
+
+#app {
+  min-height: 100dvh;
+}
+
+/* Printing the recovery key: only the sheet is printed, not the app. */
+@media print {
+  body.print-recovery * {
+    visibility: hidden;
+  }
+  body.print-recovery .recovery-sheet,
+  body.print-recovery .recovery-sheet * {
+    visibility: visible;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  body.print-recovery .recovery-sheet {
+    position: fixed;
+    inset: 0;
+    padding: 2cm;
+  }
+  body.print-recovery .recovery-sheet .no-print {
+    display: none;
+  }
+}
+
+/* An entry an /open link points at (Files ?show=): a brief glow. */
+.located {
+  animation: located 2.4s ease-out;
+  border-radius: var(--radius-md);
+}
+@keyframes located {
+  0%,
+  40% {
+    box-shadow: var(--glow-primary);
+    background: var(--primary-soft);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .located {
+    animation: none;
+    outline: 2px solid var(--primary);
+  }
+}

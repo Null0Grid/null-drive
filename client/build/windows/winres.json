@@ -1,0 +1,55 @@
+{
+  "RT_GROUP_ICON": {
+    "APP": {
+      "0000": "icon.ico"
+    }
+  },
+  "RT_MANIFEST": {
+    "#1": {
+      "0409": {
+        "identity": {
+          "name": "io.nulldrive.client",
+          "version": "{{VERSION4}}"
+        },
+        "description": "Null Drive desktop sync client",
+        "minimum-os": "win10",
+        "execution-level": "as invoker",
+        "ui-access": false,
+        "auto-elevate": false,
+        "dpi-awareness": "per monitor v2",
+        "disable-theming": false,
+        "disable-window-filtering": false,
+        "high-resolution-scrolling-aware": false,
+        "ultra-high-resolution-scrolling-aware": false,
+        "long-path-aware": true,
+        "printer-driver-isolation": false,
+        "gdi-scaling": false,
+        "segment-heap": false,
+        "use-common-controls-v6": true
+      }
+    }
+  },
+  "RT_VERSION": {
+    "#1": {
+      "0000": {
+        "fixed": {
+          "file_version": "{{VERSION4}}",
+          "product_version": "{{VERSION4}}"
+        },
+        "info": {
+          "0409": {
+            "Comments": "Self-hosted file sync: keeps a folder in sync with your Null Drive server.",
+            "CompanyName": "Null Drive",
+            "FileDescription": "Null Drive",
+            "FileVersion": "{{VERSION}}",
+            "InternalName": "NullDrive",
+            "LegalCopyright": "MIT License",
+            "OriginalFilename": "NullDrive.exe",
+            "ProductName": "Null Drive",
+            "ProductVersion": "{{VERSION}}"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+images:
+  image:
+    repository: ghcr.io/OWNER/nulldrive
+    tag: 5.0.0
+
+consts:
+  nulldrive_container_name: nulldrive
+  data_path: /data

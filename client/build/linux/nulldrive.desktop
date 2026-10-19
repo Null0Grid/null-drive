@@ -1,0 +1,12 @@
+[Desktop Entry]
+# Template for the Linux packages (not built yet): makes nulldrive:// links
+# open the app (`xdg-mime default nulldrive.desktop x-scheme-handler/nulldrive`
+# is done by the package's postinst / AppImage integration).
+Type=Application
+Name=Null Drive
+Comment=Self-hosted file sync
+Exec=nulldrive --url %u
+Icon=nulldrive
+Categories=Network;FileTransfer;
+MimeType=x-scheme-handler/nulldrive;
+StartupNotify=false

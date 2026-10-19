@@ -1,0 +1,26 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Null Drive",
+  "outputfilename": "NullDrive",
+  "frontend:install": "npm ci",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "OWNER"
+  },
+  "info": {
+    "companyName": "Null Drive",
+    "productName": "Null Drive",
+    "productVersion": "5.0.0",
+    "copyright": "MIT License",
+    "comments": "Self-hosted file sync client",
+    "protocols": [
+      {
+        "scheme": "nulldrive",
+        "description": "Null Drive link",
+        "role": "Viewer"
+      }
+    ]
+  }
+}

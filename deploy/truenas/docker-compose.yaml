@@ -1,0 +1,30 @@
+# Null Drive on TrueNAS SCALE 24.10+ (Electric Eel and later):
+#   Apps → Discover Apps → ⋮ → Install via YAML → paste this file.
+#
+# Before installing, create a dataset for the data, e.g. pool/apps/nulldrive,
+# and give the built-in "apps" user (568) access to it:
+#   Datasets → pool/apps/nulldrive → Edit Permissions → owner user/group: apps
+# Then change the host path below to the dataset's mount point.
+services:
+  nulldrive:
+    image: ghcr.io/OWNER/nulldrive:latest
+    container_name: nulldrive
+    restart: unless-stopped
+    user: "568:568"            # TrueNAS's standard "apps" user
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    stop_grace_period: 30s
+    environment:
+      NULLDRIVE_LOG_LEVEL: info
+    ports:
+      - "8080:8080"           # change the left side if 8080 is taken on the NAS
+    volumes:
+      - /mnt/pool/apps/nulldrive:/data
+    healthcheck:
+      test: ["CMD", "/nulldrive", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3

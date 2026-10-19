@@ -1,0 +1,147 @@
+/*
+ * Null Drive design tokens: the "Neon Lab" style.
+ *
+ * Rules the tokens encode:
+ *  - Near-black base with dark blue-grey panels. Dark is the default.
+ *  - Neon only where it means something: cyan = primary action / live /
+ *    focused, pink = secondary highlight (selection, brand accent),
+ *    green = OK, amber = warning, red = danger. Idle UI stays grey.
+ *  - Glow is a signal, not decoration: focus rings, the active nav item,
+ *    progress in flight. It is switched off in light mode, where neon
+ *    colours would fail contrast, so light mode uses deeper hues.
+ *
+ * Components only ever reference these variables, so the desktop client
+ * (Phase 4) gets the same look by importing this file.
+ */
+
+:root {
+  /* Typography */
+  --font-display: 'Silkscreen', 'VT323', ui-monospace, monospace;
+  --font-term: 'VT323', ui-monospace, monospace;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  --font-body: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+
+  /* Spacing (4px grid) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+
+  --sidebar-w: 15rem;
+  --tap: 2.5rem; /* minimum touch target */
+  --z-overlay: 50;
+  --z-toast: 60;
+}
+
+/* ---------- Dark (default) ---------- */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0a0a0f;
+  --bg-sunken: #06060a;
+  --panel: #10131c;
+  --surface: #151a26;
+  --surface-hover: #1b2131;
+  --surface-active: #212940;
+  --border: #222a3c;
+  --border-strong: #313b54;
+
+  --text: #d7deeb;
+  --text-muted: #8d9ab0;
+  --text-faint: #5d6a82;
+
+  --primary: #00e5ff;
+  --primary-hover: #5cf0ff;
+  --primary-ink: #001b20;
+  --primary-soft: rgb(0 229 255 / 0.12);
+  --primary-line: rgb(0 229 255 / 0.45);
+
+  --accent: #ff2e88;
+  --accent-soft: rgb(255 46 136 / 0.14);
+
+  --ok: #3dff8f;
+  --ok-soft: rgb(61 255 143 / 0.12);
+  --warn: #ffb020;
+  --warn-soft: rgb(255 176 32 / 0.13);
+  --danger: #ff4d5e;
+  --danger-hover: #ff7380;
+  --danger-ink: #1f0306;
+  --danger-soft: rgb(255 77 94 / 0.13);
+  /* Brand red: the slashes of the server's logo (not a status color). */
+  --brand-server: #ff2b45;
+  --brand-server-line: rgb(255 43 69 / 0.5);
+
+  --glow-primary: 0 0 0 1px var(--primary-line), 0 0 14px rgb(0 229 255 / 0.35);
+  --glow-accent: 0 0 14px rgb(255 46 136 / 0.35);
+  --glow-text: 0 0 8px rgb(0 229 255 / 0.55);
+  --shadow-overlay: 0 24px 60px rgb(0 0 0 / 0.6), 0 0 0 1px var(--border-strong);
+  --backdrop: rgb(3 4 8 / 0.72);
+
+  /* subtle ambient gradient behind everything */
+  --ambient: radial-gradient(1200px 600px at 85% -10%, rgb(0 229 255 / 0.07), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgb(255 46 136 / 0.06), transparent 60%);
+}
+
+/* ---------- Light ---------- */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #eef1f6;
+  --bg-sunken: #e2e7ef;
+  --panel: #f8f9fc;
+  --surface: #ffffff;
+  --surface-hover: #f1f4f9;
+  --surface-active: #e5ebf4;
+  --border: #d3dae6;
+  --border-strong: #b7c1d3;
+
+  --text: #0e1422;
+  --text-muted: #4a566c;
+  --text-faint: #75819a;
+
+  --primary: #007a8a;
+  --primary-hover: #006473;
+  --primary-ink: #ffffff;
+  --primary-soft: rgb(0 122 138 / 0.1);
+  --primary-line: rgb(0 122 138 / 0.5);
+
+  --accent: #c2105f;
+  --accent-soft: rgb(194 16 95 / 0.1);
+
+  --ok: #0d7f45;
+  --ok-soft: rgb(13 127 69 / 0.1);
+  --warn: #965600;
+  --warn-soft: rgb(150 86 0 / 0.1);
+  --danger: #c0213a;
+  --danger-hover: #a01a30;
+  --danger-ink: #ffffff;
+  --danger-soft: rgb(192 33 58 / 0.09);
+  --brand-server: #d0142f;
+  --brand-server-line: rgb(208 20 47 / 0.45);
+
+  --glow-primary: 0 0 0 1px var(--primary-line);
+  --glow-accent: none;
+  --glow-text: none;
+  --shadow-overlay: 0 20px 50px rgb(14 20 34 / 0.18), 0 0 0 1px var(--border);
+  --backdrop: rgb(14 20 34 / 0.35);
+  --ambient: none;
+}

@@ -1,0 +1,60 @@
+# Weekly dependency updates, grouped so each ecosystem is one PR instead of
+# a dozen. Security updates still arrive immediately (repo setting).
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    groups:
+      go:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /ui
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    groups:
+      ui-dev:
+        dependency-type: development
+      ui-prod:
+        dependency-type: production
+    ignore:
+      # Kept equal to the browser build used in CI; bump deliberately.
+      - dependency-name: "@playwright/test"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: gomod
+    directory: /client
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    groups:
+      client-go:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /client/frontend
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    groups:
+      client-ui:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies]

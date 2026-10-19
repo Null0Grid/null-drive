@@ -1,0 +1,7 @@
+0:00 Intro
+0:06 Step 1: Start the server
+0:21 Step 2: Setup wizard
+0:48 Step 3: Use the web app
+1:36 Step 4: Connect a computer
+1:56 Step 5: Two-factor sign-in and encryption
+2:45 Next steps
