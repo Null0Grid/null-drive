@@ -42,7 +42,7 @@ All downloads are on the **[Releases](../../releases)** page.
 
 Then open `http://<server>:8080` and create the admin account straight away. HTTPS, backups and upgrades: [docs/INSTALL.md](docs/INSTALL.md).
 
-**Desktop app (Windows 10/11):** `NullDrive-<version>-Setup.exe` from the release. It installs for your account, no admin rights needed. `NullDrive_<version>_windows_amd64.zip` is the same app without an installer. A Microsoft Store listing is in preparation ([docs/STORE.md](docs/STORE.md)).
+**Desktop app (Windows 10/11):** `NullDrive-<version>-Setup.exe` from the release. It installs for your account, no admin rights needed. `NullDrive-<version>-portable.zip` is the same app without an installer. A Microsoft Store listing is in preparation ([docs/STORE.md](docs/STORE.md)).
 
 ## Null Grid: how it connects
 

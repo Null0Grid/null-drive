@@ -239,7 +239,7 @@ jobs:
       - name: Take NullDrive.exe from the portable zip
         shell: pwsh
         run: |
-          $zip = Get-ChildItem dist -Filter "NullDrive_*_windows_amd64.zip" | Select-Object -First 1
+          $zip = Get-ChildItem dist -Filter "NullDrive*.zip" | Select-Object -First 1
           Expand-Archive $zip.FullName -DestinationPath portable
           New-Item -ItemType Directory -Force client/build/bin | Out-Null
           $exe = Get-ChildItem portable -Recurse -Filter NullDrive.exe | Select-Object -First 1

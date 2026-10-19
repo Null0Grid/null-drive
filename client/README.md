@@ -53,7 +53,7 @@ Builds, from Linux, macOS or Windows, into `dist/`:
 | File | What |
 |---|---|
 | `NullDrive-<v>-Setup.exe` | Installer: per-user into `%LOCALAPPDATA%\Programs\Null Drive`, no admin prompt, Start menu entry, Apps & features entry, upgrades in place |
-| `NullDrive_<v>_windows_amd64.zip` | The same `NullDrive.exe`, portable |
+| `NullDrive-<v>-portable.zip` | The same `NullDrive.exe`, portable |
 | `winget/*.yaml` | winget manifests for this version (submitting: below) |
 
 It needs Go, Node 22, `makensis` (`apt install nsis`, `brew install makensis`, `choco install nsis`) and installs `go-winres` on first use. Wails' Windows target is pure Go, so this is a plain `go build -tags desktop,production` with the icon, manifest and version info compiled in; `wails build` on Windows produces the same program. CI builds the installer this way on every push (`windows-installer` job) and attaches it to releases.

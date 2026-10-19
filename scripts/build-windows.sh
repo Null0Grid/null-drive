@@ -5,7 +5,7 @@
 #
 # Output in dist/:
 #   NullDrive-<v>-Setup.exe             per-user installer (NSIS)
-#   NullDrive_<v>_windows_amd64.zip     portable: NullDrive.exe + LICENSE
+#   NullDrive-<v>-portable.zip          portable: NullDrive.exe + LICENSE
 #   winget/                             winget manifests for this version
 #
 # Needs: Go, Node 22 (npm), makensis (apt install nsis; choco install nsis),
@@ -69,8 +69,11 @@ sign() {
 sign "$WORK/NullDrive.exe"
 
 step "Portable zip"
-ZIP="NullDrive_${VERSION}_windows_${ARCH}.zip"
-STAGE="$WORK/NullDrive_${VERSION}_windows_${ARCH}"
+# Not "NullDrive_<v>_windows_amd64.zip": GitHub release asset names are
+# case-insensitive, and that one collides with the server archive
+# nulldrive_<v>_windows_amd64.zip.
+ZIP="NullDrive-${VERSION}-portable.zip"
+STAGE="$WORK/NullDrive-${VERSION}-portable"
 rm -rf "$STAGE" && mkdir -p "$STAGE"
 cp "$WORK/NullDrive.exe" "$STAGE/"
 cp LICENSE "$STAGE/LICENSE.txt"

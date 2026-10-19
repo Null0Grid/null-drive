@@ -245,7 +245,7 @@ jobs:
       - name: Take NullDrive.exe from the portable zip
         shell: pwsh
         run: |
-          $zip = Get-ChildItem dist -Filter "NullDrive_*_windows_amd64.zip" | Select-Object -First 1
+          $zip = Get-ChildItem dist -Filter "NullDrive*.zip" | Select-Object -First 1
           Expand-Archive $zip.FullName -DestinationPath portable
           New-Item -ItemType Directory -Force client/build/bin | Out-Null
           $exe = Get-ChildItem portable -Recurse -Filter NullDrive.exe | Select-Object -First 1
@@ -281,6 +281,17 @@ jobs:
         with:
           name: desktop
           path: dist
+      - name: Portable zip name (tags built before 5.0.1 used the old one)
+        run: |
+          # GitHub release asset names are case-insensitive: the old
+          # NullDrive_<v>_windows_amd64.zip collides with the server archive
+          # nulldrive_<v>_windows_amd64.zip.
+          shopt -s nullglob
+          for f in dist/NullDrive_*_windows_amd64.zip; do mv -v "$f" "dist/NullDrive-${VERSION}-portable.zip"; done
+          # Fail here, not halfway through the upload, if two files would
+          # still collide.
+          dup=$(find dist -maxdepth 1 -type f -printf '%f\n' | tr '[:upper:]' '[:lower:]' | sort | uniq -d)
+          if [ -n "$dup" ]; then echo "::error::asset names that differ only in case: $dup"; exit 1; fi
       - name: Checksums for everything attached
         run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Image name
@@ -312,7 +323,7 @@ jobs:
 
             **Server, anything else:** the `nulldrive_${{ needs.version.outputs.version }}_<os>_<arch>` archive for your system.
 
-            **Desktop app (Windows 10/11):** `NullDrive-${{ needs.version.outputs.version }}-Setup.exe` installs for your account, no admin needed; `NullDrive_${{ needs.version.outputs.version }}_windows_amd64.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
+            **Desktop app (Windows 10/11):** `NullDrive-${{ needs.version.outputs.version }}-Setup.exe` installs for your account, no admin needed; `NullDrive-${{ needs.version.outputs.version }}-portable.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
 
             Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/INSTALL.md).
 
