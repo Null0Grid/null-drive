@@ -90,11 +90,14 @@ rm -f "$MSIX"
 if [[ -n "$MAKEAPPX" ]]; then
   if [[ -n "$MAKEPRI" ]]; then
     # Index the scale-/targetsize- icon variants into resources.pri.
-    (cd "$STAGE" && "$MAKEPRI" createconfig /cf priconfig.xml /dq en-US /pv 10.0.0 /o >/dev/null &&
-      "$MAKEPRI" new /pr . /cf priconfig.xml /mn AppxManifest.xml /of resources.pri /o >/dev/null &&
+    (cd "$STAGE" && MSYS2_ARG_CONV_EXCL='*' "$MAKEPRI" createconfig /cf priconfig.xml /dq en-US /pv 10.0.0 /o >/dev/null &&
+      MSYS2_ARG_CONV_EXCL='*' "$MAKEPRI" new /pr . /cf priconfig.xml /mn AppxManifest.xml /of resources.pri /o >/dev/null &&
       rm priconfig.xml)
   fi
-  "$MAKEAPPX" pack /d "$(cygpath -w "$STAGE" 2>/dev/null || echo "$STAGE")" /p "$(cygpath -w "$MSIX" 2>/dev/null || echo "$MSIX")" /o
+  # Git Bash (MSYS) rewrites arguments that look like Unix paths: "/d" would
+  # become "D:/" and MakeAppx would fail with exit code 87 (invalid
+  # parameter). MSYS2_ARG_CONV_EXCL='*' passes the switches through as is.
+  MSYS2_ARG_CONV_EXCL='*' "$MAKEAPPX" pack /d "$(cygpath -w "$STAGE" 2>/dev/null || echo "$STAGE")" /p "$(cygpath -w "$MSIX" 2>/dev/null || echo "$MSIX")" /o
 elif [[ -n "$MAKEMSIX" ]]; then
   "$MAKEMSIX" pack -d "$STAGE" -p "$MSIX"
 else
