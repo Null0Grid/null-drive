@@ -22,8 +22,10 @@ export default defineConfig({
   resolve: {
     alias: { $lib: lib },
     // The shared components live in ../../ui and would otherwise resolve
-    // `svelte` from ui/node_modules: two Svelte runtimes break reactivity.
-    dedupe: ['svelte'],
+    // packages from ui/node_modules: two Svelte runtimes break reactivity,
+    // and in CI (and a fresh clone) ui/node_modules may not exist at all.
+    // Resolve them from this app's own node_modules instead.
+    dedupe: ['svelte', '@fontsource/silkscreen', '@fontsource/vt323', '@fontsource/jetbrains-mono'],
   },
   server: {
     fs: { allow: ['..', '../../ui'] },

@@ -160,12 +160,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: client/frontend/package-lock.json
+          cache-dependency-path: |
+            client/frontend/package-lock.json
+            ui/package-lock.json
       - name: Shared packages on Windows (paths, sync engine)
         run: go test ./shared/...
       - name: Frontend type check + tests
         working-directory: client/frontend
         run: |
+          # The desktop app type-checks the shared components in ../../ui,
+          # which need ui's own packages (their types) installed too.
+          (cd ../../ui && npm ci --no-audit --no-fund)
           npm ci
           npm run check
           npm test
