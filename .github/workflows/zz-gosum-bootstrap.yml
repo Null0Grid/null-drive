@@ -1,0 +1,26 @@
+name: gosum-bootstrap
+on:
+  push:
+    branches: [gosum-bootstrap]
+permissions:
+  contents: write
+jobs:
+  tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false
+      - name: go mod tidy (server + client)
+        run: |
+          GOWORK=off go mod tidy
+          (cd client && GOWORK=off go mod tidy)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add go.mod go.sum client/go.mod client/go.sum
+          git commit -m "go.sum from go mod tidy"
+          git push origin HEAD:gosum-bootstrap
+      - name: server tests with the real modernc sqlite
+        run: GOWORK=off go test ./... 2>&1 | tail -40
