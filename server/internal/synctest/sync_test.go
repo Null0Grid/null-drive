@@ -199,20 +199,38 @@ func (d *device) tree() map[string]string {
 	return out
 }
 
-// serverTree is the server's live state, contents included.
+// serverTree is the server's live state, contents included. A running
+// agent can delete or replace a file between the listing and its download
+// (e.g. a conflict copy being resolved): then the snapshot is taken again,
+// so callers always see one consistent state.
 func (w *world) serverTree() map[string]string {
 	ctx := context.Background()
+	for attempt := 0; ; attempt++ {
+		out, vanished := w.serverTreeOnce(ctx)
+		if !vanished {
+			return out
+		}
+		if attempt == 20 {
+			w.t.Fatal("server tree kept changing between listing and download")
+		}
+	}
+}
+
+func (w *world) serverTreeOnce(ctx context.Context) (out map[string]string, vanished bool) {
 	list, err := w.admin.ListFiles(ctx, nil)
 	if err != nil {
 		w.t.Fatal(err)
 	}
-	out := map[string]string{}
+	out = map[string]string{}
 	for _, f := range list.Files {
 		if f.IsDir {
 			out[f.Path] = "<dir>"
 			continue
 		}
 		rc, _, err := w.admin.Download(ctx, f.Path)
+		if client.IsCode(err, "not_found") {
+			return nil, true
+		}
 		if err != nil {
 			w.t.Fatal(err)
 		}
@@ -220,7 +238,7 @@ func (w *world) serverTree() map[string]string {
 		rc.Close()
 		out[f.Path] = string(b)
 	}
-	return out
+	return out, false
 }
 
 func keys(m map[string]string) []string {
