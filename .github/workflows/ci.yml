@@ -42,7 +42,14 @@ jobs:
           go mod tidy -diff
           (cd client && go mod tidy -diff)
       - name: Test (race detector)
-        run: go test -race -count=1 ./...
+        run: |
+          # Failures are repeated as annotations, so they show on the run's
+          # summary page without opening the log.
+          set +e
+          go test -race -count=1 ./... 2>&1 | tee "$RUNNER_TEMP/test.log"
+          status=${PIPESTATUS[0]}
+          grep -E -A4 -- '--- FAIL|^panic:|WARNING: DATA RACE' "$RUNNER_TEMP/test.log" | head -60 | sed 's/^/::error::/'
+          exit "$status"
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
