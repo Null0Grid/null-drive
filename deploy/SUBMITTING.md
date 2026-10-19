@@ -1,10 +1,6 @@
 # Publishing Null Drive to NAS app stores
 
-All templates use the placeholder `OWNER`. Replace it with your **lowercase** GitHub username (GHCR image names must be lowercase), commit, and make sure a release image exists on GHCR and is **public** before submitting anywhere:
-
-```bash
-grep -rl OWNER deploy | xargs sed -i 's/OWNER/yourname/g'
-```
+All templates point at `ghcr.io/null0grid/null-drive`, the image the release workflow publishes (GHCR names are lowercase). Make sure a release image exists there and is **public** before submitting anywhere.
 
 Each store wants a stable support URL and screenshots; use the GitHub repo's Issues page and the images in `docs/screenshots/`.
 
@@ -19,7 +15,7 @@ Each store wants a stable support URL and screenshots; use the GitHub repo's Iss
 3. Validate locally:
    ```bash
    docker compose -f Apps/NullDrive/docker-compose.yml config -q
-   ./scripts/build_dist.sh          # must finish without errors and produce dist/apps/io.github.<you>.nulldrive/
+   ./scripts/build_dist.sh          # must finish without errors and produce dist/apps/io.github.null0grid.null-drive/
    ```
 4. Open a PR saying it's a **new app**, what it does, and how you validated it. CI checks the compose file and build.
 5. On every release: bump `image:` tag, `x-casaos.version`, `update_at` and `release_notes` in the same PR.
@@ -62,7 +58,7 @@ The catalog is <https://github.com/truenas/apps>; apps are Jinja-templated compo
 
 ## Release checklist for store listings
 
-- [ ] GitHub release `vX.Y.Z` published, images `ghcr.io/<you>/nulldrive:X.Y.Z` and `:latest` exist and are public
+- [ ] GitHub release `vX.Y.Z` published, images `ghcr.io/null0grid/null-drive:X.Y.Z` and `:latest` exist and are public
 - [ ] CasaOS: `image`, `version`, `update_at`, `release_notes` bumped
 - [ ] Unraid: nothing to do for `:latest` (users update in the Docker tab); bump if pinned
 - [ ] TrueNAS catalog: their Renovate bot bumps `ix_values.yaml` image tags automatically once the app is merged

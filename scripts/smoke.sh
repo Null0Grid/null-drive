@@ -16,7 +16,7 @@ command -v jq   >/dev/null || { echo "jq is required"; exit 1; }
 DATA="$(mktemp -d)"
 LOG="$DATA/server.log"
 cleanup() {
-  [[ -n "${PID:-}" ]] && kill "$PID" 2>/dev/null && wait "$PID" 2>/dev/null || true
+  if [[ -n "${PID:-}" ]]; then kill "$PID" 2>/dev/null || true; wait "$PID" 2>/dev/null || true; fi
   rm -rf "$DATA"
 }
 trap cleanup EXIT

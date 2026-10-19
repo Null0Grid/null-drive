@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/db"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/storage"
-	"github.com/nulldrive/nulldrive/shared/chunker"
+	"github.com/Null0Grid/null-drive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/storage"
+	"github.com/Null0Grid/null-drive/shared/chunker"
 )
 
 func newStore(t *testing.T) (*Store, string) {

@@ -10,9 +10,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/server/internal/buildinfo"
-	"github.com/nulldrive/nulldrive/shared/mdns"
+	"github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/server/internal/buildinfo"
+	"github.com/Null0Grid/null-drive/shared/mdns"
 )
 
 // Advertiser implements api.Discovery.

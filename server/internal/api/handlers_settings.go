@@ -8,8 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 const (

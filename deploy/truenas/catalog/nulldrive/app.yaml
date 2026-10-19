@@ -7,12 +7,12 @@ app_version: 5.0.0
 capabilities: []
 categories:
   - productivity
-changelog_url: https://github.com/OWNER/nulldrive/releases
+changelog_url: https://github.com/Null0Grid/null-drive/releases
 date_added: "2026-10-14"
 description: Self-hosted file sync with a built-in web UI. Like Dropbox, but you own the server.
-home: https://github.com/OWNER/nulldrive
+home: https://github.com/Null0Grid/null-drive
 host_mounts: []
-icon: https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/assets/icon.png
+icon: https://raw.githubusercontent.com/Null0Grid/null-drive/main/deploy/assets/icon.png
 keywords:
   - files
   - sync
@@ -33,7 +33,7 @@ run_as_context:
     user_name: nulldrive
 screenshots: []        # attach images to the PR; reviewers host them on the TrueNAS CDN
 sources:
-  - https://github.com/OWNER/nulldrive
+  - https://github.com/Null0Grid/null-drive
 title: Null Drive
 train: community
 version: 1.1.0

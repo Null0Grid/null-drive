@@ -7,19 +7,19 @@
 -->
 <Container version="2">
   <Name>NullDrive</Name>
-  <Repository>ghcr.io/OWNER/nulldrive:latest</Repository>
-  <Registry>https://github.com/OWNER/nulldrive/pkgs/container/nulldrive</Registry>
+  <Repository>ghcr.io/null0grid/null-drive:latest</Repository>
+  <Registry>https://github.com/Null0Grid/null-drive/pkgs/container/nulldrive</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/OWNER/nulldrive/issues</Support>
-  <Project>https://github.com/OWNER/nulldrive</Project>
+  <Support>https://github.com/Null0Grid/null-drive/issues</Support>
+  <Project>https://github.com/Null0Grid/null-drive</Project>
   <Overview>Self-hosted file sync: like Dropbox, but you own the server. One small container with a built-in web UI (setup wizard, file browser, drag-and-drop uploads) and an embedded database. Edits from two devices never silently overwrite each other. Open the WebUI after installing and finish the setup wizard right away: until an admin exists, anyone who can reach the page can create it.</Overview>
   <Category>Cloud: Productivity: Backup:</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/unraid/nulldrive.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/assets/icon.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/Null0Grid/null-drive/main/deploy/unraid/nulldrive.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/Null0Grid/null-drive/main/deploy/assets/icon.png</Icon>
   <ExtraParams>--user 99:100 --read-only --cap-drop=ALL --security-opt no-new-privileges --stop-timeout 30</ExtraParams>
   <PostArgs/>
   <CPUset/>

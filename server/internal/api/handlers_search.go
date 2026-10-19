@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/internal/search"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/search"
 )
 
 // Search (Null franchise search contract v1). GET /search is the contract

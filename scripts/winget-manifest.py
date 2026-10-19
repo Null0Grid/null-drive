@@ -2,13 +2,13 @@
 """Write winget manifests (schema 1.6, multi-file) for one release.
 
     python3 scripts/winget-manifest.py --version 0.7.0 --sha256 <HEX> \\
-        --url https://github.com/OWNER/nulldrive/releases/download/v0.7.0/NullDrive-0.7.0-Setup.exe \\
-        --repo OWNER/nulldrive --out dist/winget
+        --url https://github.com/Null0Grid/null-drive/releases/download/v0.7.0/NullDrive-0.7.0-Setup.exe \\
+        --repo Null0Grid/null-drive --out dist/winget
 
 Submitting: fork microsoft/winget-pkgs, copy the three files to
 manifests/<first letter>/<Publisher>/NullDrive/<version>/ and open a PR
 (`wingetcreate submit dist/winget` does the same). docs/INSTALL.md has the
-checklist. The package identifier is "<GitHub owner>.NullDrive".
+checklist. The package identifier is "NULLGRID.NullDrive".
 """
 from __future__ import annotations
 
@@ -27,8 +27,7 @@ def main() -> None:
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
 
-    owner = a.repo.split("/")[0]
-    publisher = owner if owner != "OW" + "NER" else "NullDrive"  # placeholder until prepare-github.sh
+    publisher = "NULLGRID"
     pid = f"{publisher}.NullDrive"
     home = f"https://github.com/{a.repo}"
     os.makedirs(a.out, exist_ok=True)
@@ -71,10 +70,10 @@ PackageIdentifier: {pid}
 PackageVersion: {a.version}
 PackageLocale: en-US
 Publisher: {publisher}
-PublisherUrl: https://github.com/{owner}
+PublisherUrl: https://nullgrid.dev
 PackageName: Null Drive
 PackageUrl: {home}
-License: MIT
+License: Proprietary
 LicenseUrl: {home}/blob/main/LICENSE
 ShortDescription: Self-hosted file sync client. Like Dropbox, but you own the server.
 Description: |-

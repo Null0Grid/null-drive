@@ -43,7 +43,7 @@ COPY rootfs/ /
 COPY --chown=65532:65532 data/ /data/
 LABEL org.opencontainers.image.title="Null Drive" \\
       org.opencontainers.image.description="Self-hosted file sync server with a built-in web UI" \\
-      org.opencontainers.image.licenses="MIT" \\
+      org.opencontainers.image.licenses="LicenseRef-NULLGRID-proprietary" \\
       org.opencontainers.image.version="${VERSION}"
 ENV NULLDRIVE_DATA_DIR=/data NULLDRIVE_PORT=8080 SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 USER 65532:65532

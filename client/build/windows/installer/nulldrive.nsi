@@ -51,7 +51,7 @@ VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "FileDescription" "${APP} installer"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "CompanyName" "${APP}"
-VIAddVersionKey "LegalCopyright" "MIT License"
+VIAddVersionKey "LegalCopyright" "Copyright (c) 2026 NULLGRID"
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
@@ -168,7 +168,7 @@ Section "Null Drive" SecMain
   WriteRegStr HKCU "${UNINST_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${UNINST_KEY}" "UninstallString" '"$INSTDIR\${UNINST_NAME}"'
   WriteRegStr HKCU "${UNINST_KEY}" "QuietUninstallString" '"$INSTDIR\${UNINST_NAME}" /S'
-  WriteRegStr HKCU "${UNINST_KEY}" "URLInfoAbout" "https://github.com/OWNER/nulldrive"
+  WriteRegStr HKCU "${UNINST_KEY}" "URLInfoAbout" "https://github.com/Null0Grid/null-drive"
   WriteRegDWORD HKCU "${UNINST_KEY}" "NoModify" 1
   WriteRegDWORD HKCU "${UNINST_KEY}" "NoRepair" 1
   SectionGetSize ${SecMain} $0

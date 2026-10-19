@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
 )
 
 // End-to-end encryption (Phase 7). The client does all the cryptography;

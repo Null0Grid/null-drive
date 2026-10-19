@@ -16,12 +16,12 @@ Null Drive is one container (or one binary) with the web UI built in. Pick a met
 - [Forgot the admin password](#forgot-the-admin-password)
 - [Troubleshooting](#troubleshooting)
 
-Images: `ghcr.io/OWNER/nulldrive` for `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5 with a 64-bit OS, Apple-silicon VMs, ARM VPSes). Tags: `latest`, `X.Y.Z`, `X.Y`, `vX.Y.Z`.
+Images: `ghcr.io/null0grid/null-drive` for `linux/amd64` and `linux/arm64` (Raspberry Pi 4/5 with a 64-bit OS, Apple-silicon VMs, ARM VPSes). Tags: `latest`, `X.Y.Z`, `X.Y`, `vX.Y.Z`.
 
 ## Docker (one command)
 
 ```bash
-docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ghcr.io/OWNER/nulldrive:latest
+docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ghcr.io/null0grid/null-drive:latest
 ```
 
 `nulldrive-data` is a Docker-managed volume; everything (database + files) lives there.
@@ -29,7 +29,7 @@ docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart un
 ## Docker Compose
 
 ```bash
-curl -O https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/docker-compose.yml
+curl -O https://raw.githubusercontent.com/Null0Grid/null-drive/main/deploy/docker-compose.yml
 docker compose up -d
 ```
 
@@ -74,11 +74,11 @@ Each release also has `nulldrive_X.Y.Z_docker_amd64.tar` / `_arm64.tar`, for mac
 docker load -i nulldrive_X.Y.Z_docker_amd64.tar      # → nulldrive:X.Y.Z and nulldrive:latest
 docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped nulldrive:X.Y.Z
 ```
-In the compose files, replace `ghcr.io/OWNER/nulldrive:…` with `nulldrive:X.Y.Z`. The image is the same runtime as the published one (non-root user 65532, `/data`, built-in healthcheck); `scripts/build-image-offline.sh` builds it without pulling anything.
+In the compose files, replace `ghcr.io/null0grid/null-drive:…` with `nulldrive:X.Y.Z`. The image is the same runtime as the published one (non-root user 65532, `/data`, built-in healthcheck); `scripts/build-image-offline.sh` builds it without pulling anything.
 
 ## Plain binary
 
-Downloads for Linux, macOS and Windows (amd64/arm64) are attached to every [GitHub Release](https://github.com/OWNER/nulldrive/releases), with `SHA256SUMS.txt`.
+Downloads for Linux, macOS and Windows (amd64/arm64) are attached to every [GitHub Release](https://github.com/Null0Grid/null-drive/releases), with `SHA256SUMS.txt`.
 
 ```bash
 tar xzf nulldrive_X.Y.Z_linux_amd64.tar.gz
@@ -117,11 +117,21 @@ WantedBy=multi-user.target
 sudo install -m 755 nulldrive /usr/local/bin/ && sudo systemctl enable --now nulldrive
 ```
 
-| Variable | Default | |
+## Configuration
+
+Environment variables (in the `.deb`: `/etc/default/nulldrive`). Everything else is set in the app and stored in the database.
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `NULLDRIVE_DATA_DIR` | `./data` (`/data` in the image) | Database + files |
+| `NULLDRIVE_DATA_DIR` | `./data` (`/data` in the image, `/var/lib/nulldrive` in the `.deb`) | Database and file blobs |
 | `NULLDRIVE_PORT` | `8080` | HTTP port |
 | `NULLDRIVE_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+| `NULLDRIVE_TRUST_PROXY` | `off` | Take client IPs from `X-Forwarded-For` and HTTPS from `X-Forwarded-Proto` (for HSTS); only behind a reverse proxy |
+| `NULLDRIVE_MDNS` | `on` | `off` disables LAN discovery regardless of the Settings toggle |
+| `NULLDRIVE_ADVERTISE_ADDR` | auto | Comma-separated IPs to announce via mDNS (macvlan, reflectors) |
+| `NULLDRIVE_ADVERTISE_PORT` | `NULLDRIVE_PORT` | Port to announce (when Docker maps a different host port) |
+| `NULLDRIVE_GC_INTERVAL` | `1h` | How often old versions are pruned and unused chunks deleted |
+| `NULLDRIVE_SEARCH_ORIGINS` | `https://search.nullgrid.dev` | Web origins allowed to call `GET /search` (CORS), comma-separated, or `off` |
 
 ## LAN discovery (mDNS) and Docker networking
 
@@ -132,7 +142,7 @@ The server announces itself on the local network as `_nulldrive._tcp`, so the de
 ```yaml
 services:
   nulldrive:
-    image: ghcr.io/OWNER/nulldrive:latest
+    image: ghcr.io/null0grid/null-drive:latest
     network_mode: host          # mDNS needs to be on the LAN; `ports:` is ignored in this mode
     environment:
       NULLDRIVE_PORT: "8080"    # the port is now opened directly on the host
@@ -147,7 +157,7 @@ If you keep the bridge network, discovery simply won't find the server (Settings
 
 ## Desktop app (Windows)
 
-Download `NullDrive-<version>-Setup.exe` from the [latest release](https://github.com/OWNER/nulldrive/releases/latest) and run it. It installs for your Windows account only (no administrator prompt), adds Null Drive to the Start menu, and opens it at the end. Windows 10 (1809+) or 11, 64-bit.
+Download `NullDrive-<version>-Setup.exe` from the [latest release](https://github.com/Null0Grid/null-drive/releases/latest) and run it. It installs for your Windows account only (no administrator prompt), adds Null Drive to the Start menu, and opens it at the end. Windows 10 (1809+) or 11, 64-bit.
 
 - **SmartScreen:** until releases are code-signed, Windows may say it "protected your PC". Choose *More info → Run anyway*. Verify the file against `SHA256SUMS.txt` in the release if you like: `Get-FileHash NullDrive-*-Setup.exe`.
 - **Updating:** run the newer installer. It closes the running app cleanly first; your settings and sync state are kept.
@@ -155,7 +165,7 @@ Download `NullDrive-<version>-Setup.exe` from the [latest release](https://githu
 - **Microsoft Store:** once published, the Store build updates itself and has no SmartScreen step. It keeps its own settings, so install either it or the installer, not both ([STORE.md](STORE.md)).
 - **Links:** all three register `nulldrive://` links (Null Search results) for your account; see [Search from Null Search](#search-from-null-search).
 - **Uninstalling:** *Settings → Apps → Null Drive → Uninstall*. Your synced folder is never deleted; you're asked whether to also remove settings and the saved sign-in.
-- **winget:** once the package is accepted into the winget repository, `winget install <owner>.NullDrive`. The manifests are attached to every release (submitting them: [client/README.md](../client/README.md)).
+- **winget:** once the package is accepted into the winget repository, `winget install NULLGRID.NullDrive`. The manifests are attached to every release (submitting them: [client/README.md](../client/README.md)).
 - **Silent install** (for scripts or deployment tools): `NullDrive-<version>-Setup.exe /S`, uninstall with `"%LOCALAPPDATA%\Programs\Null Drive\Uninstall Null Drive.exe" /S`.
 
 ## Adding devices
@@ -213,7 +223,7 @@ Caddy has no request-body limit by default and handles WebSockets (realtime sync
 ```yaml
 services:
   nulldrive:
-    image: ghcr.io/OWNER/nulldrive:latest
+    image: ghcr.io/null0grid/null-drive:latest
     volumes: [nulldrive-data:/data]
     labels:
       - traefik.enable=true
@@ -274,7 +284,7 @@ docker stop nulldrive && docker rm nulldrive
 docker volume create nulldrive-data-restored
 docker run --rm -v nulldrive-data-restored:/data -v "$PWD":/backup alpine \
   sh -c 'tar xzf /backup/nulldrive-YYYY-MM-DD.tar.gz -C /data && chown -R 65532:65532 /data'
-docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data-restored:/data --restart unless-stopped ghcr.io/OWNER/nulldrive:latest
+docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data-restored:/data --restart unless-stopped ghcr.io/null0grid/null-drive:latest
 ```
 
 With a bind mount, back up the host folder with any tool you like (restic, borg, ZFS snapshots…) while the container is stopped, or snapshot the filesystem atomically (ZFS/Btrfs/LVM snapshots are consistent even while running).
@@ -313,7 +323,7 @@ Upgrading from 0.5 or earlier converts existing files on first start (a few seco
 ```bash
 docker compose pull && docker compose up -d        # compose
 # or
-docker pull ghcr.io/OWNER/nulldrive:latest && docker stop nulldrive && docker rm nulldrive && docker run -d ...   # same run command as before
+docker pull ghcr.io/null0grid/null-drive:latest && docker stop nulldrive && docker rm nulldrive && docker run -d ...   # same run command as before
 ```
 
 - Database migrations run automatically on start.

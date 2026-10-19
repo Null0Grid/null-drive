@@ -2,7 +2,7 @@
 #
 # Null Drive container image.
 #
-#   docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/<owner>/nulldrive .
+#   docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/null0grid/null-drive .
 #
 # Three stages:
 #   ui     Node builds the Svelte UI (architecture-independent, built once)
@@ -42,8 +42,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath \
       -ldflags "-s -w \
-        -X github.com/nulldrive/nulldrive/server/internal/buildinfo.Version=${VERSION} \
-        -X github.com/nulldrive/nulldrive/server/internal/buildinfo.Commit=${COMMIT}" \
+        -X github.com/Null0Grid/null-drive/server/internal/buildinfo.Version=${VERSION} \
+        -X github.com/Null0Grid/null-drive/server/internal/buildinfo.Commit=${COMMIT}" \
       -o /out/nulldrive ./server/cmd/nulldrive \
  && mkdir -p /out/data
 
@@ -56,7 +56,7 @@ ARG VERSION=dev
 ARG COMMIT=none
 LABEL org.opencontainers.image.title="Null Drive" \
       org.opencontainers.image.description="Self-hosted file sync server with a built-in web UI" \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.licenses="LicenseRef-NULLGRID-proprietary" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${COMMIT}"
 

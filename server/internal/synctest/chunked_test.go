@@ -14,7 +14,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/client"
 )
 
 func randomData(seed uint64, n int) []byte {

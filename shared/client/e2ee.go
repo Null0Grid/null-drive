@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // End-to-end encryption endpoints (API v2, Phase 7). The client only moves

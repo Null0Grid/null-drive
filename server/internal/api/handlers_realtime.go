@@ -7,8 +7,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/nulldrive/nulldrive/server/internal/realtime"
-	"github.com/nulldrive/nulldrive/shared/ws"
+	"github.com/Null0Grid/null-drive/server/internal/realtime"
+	"github.com/Null0Grid/null-drive/shared/ws"
 )
 
 // handleWS: GET /api/v1/ws upgrades to a WebSocket that pushes

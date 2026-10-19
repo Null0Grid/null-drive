@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/client"
 )
 
 // TestBenchmarkLargeFile measures the Phase 6 headline: editing part of a

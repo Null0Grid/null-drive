@@ -8,8 +8,8 @@ import (
 	gosync "sync"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/client"
-	"github.com/nulldrive/nulldrive/shared/pathutil"
+	"github.com/Null0Grid/null-drive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
 )
 
 // State is the agent's high-level state, shown as the tray icon.

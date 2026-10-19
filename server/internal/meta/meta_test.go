@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/db"
 )
 
 const (

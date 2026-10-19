@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
 )
 
 // Account-level operations shared by the desktop app and the CLI: turn

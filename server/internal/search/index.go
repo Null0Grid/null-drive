@@ -33,10 +33,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/chunkstore"
-	"github.com/nulldrive/nulldrive/server/internal/db"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/server/internal/chunkstore"
+	"github.com/Null0Grid/null-drive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // ErrEncrypted: the account uses end-to-end encryption; there's nothing

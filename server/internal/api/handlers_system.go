@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/nulldrive/nulldrive/server/internal/buildinfo"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/internal/sysinfo"
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/server/internal/buildinfo"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/sysinfo"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // handleSystemInfo: GET /api/v1/system/info.

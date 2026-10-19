@@ -8,7 +8,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/e2ee"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
 )
 
 // End-to-end encryption state (Phase 7). The server's whole job here is

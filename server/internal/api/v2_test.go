@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	srvapi "github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/server/internal/chunkstore"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/chunker"
+	srvapi "github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/server/internal/chunkstore"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/chunker"
 )
 
 // Small chunks so tests exercise multi-chunk files with KB of data.

@@ -279,7 +279,7 @@ git push origin v0.3.0
                   ├─ docker: hadolint → buildx amd64+arm64 (no push) → template validation
                   └─ actionlint
         │  all green
-        ├──▶ image:    buildx amd64+arm64 → ghcr.io/<owner>/nulldrive
+        ├──▶ image:    buildx amd64+arm64 → ghcr.io/null0grid/null-drive
         │               tags 0.3.0 · 0.3 · v0.3.0 · latest   (+ SBOM, SLSA provenance)
         └──▶ binaries: vite build once → scripts/build-release.sh
                         linux/darwin/windows × amd64/arm64 (.tar.gz/.zip) + SHA256SUMS.txt

@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	srvapi "github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
+	srvapi "github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
 )
 
 // TestNotesE2EEFlow is docs/NOTES-E2EE.md as a test: a third-party client

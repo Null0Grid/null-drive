@@ -5,8 +5,8 @@ import (
 	"sync"
 	"testing"
 
-	srvapi "github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/shared/api"
+	srvapi "github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 type fakeDiscovery struct {

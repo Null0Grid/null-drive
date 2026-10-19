@@ -1,39 +1,96 @@
-# Release: push a tag like v0.3.0 → tests run → multi-arch image on GHCR,
-# binaries for linux/macOS/windows (amd64 + arm64) with checksums, and a
-# GitHub Release with auto-generated notes.
+name: Release
+
+# Push a tag that matches the app version (client/wails.json
+# info.productVersion), with or without a "v": 5.0.1 or v5.0.1. Or, for a tag
+# that already exists: Actions → Release → Run workflow, and type the tag.
 #
-#   git tag -a v0.3.0 -m "v0.3.0" && git push origin v0.3.0
+# Runs the full CI and security checks on that tag, then builds everything
+# Null Drive ships and attaches it to the release for that tag (an existing
+# release keeps its published/draft state; a new one is published):
+#   - server archives for Linux, macOS and Windows (amd64 + arm64)
+#   - .deb packages (amd64 + arm64) and Docker image archives (docker load)
+#   - the Windows desktop app: installer, portable zip, winget manifests
+#   - SHA256SUMS.txt
+# Also pushes the multi-arch image to ghcr.io/<owner>/<repo> (lowercase).
+# The Microsoft Store .msix is a workflow artifact only (store-package): it's
+# unsigned and meant for Partner Center, which signs it.
 #
-# Tags with a hyphen (v0.4.0-rc.1) become pre-releases and do not move :latest.
-name: release
+# Hyphenated tags (5.1.0-rc.1) don't move the image's :latest.
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*", "[0-9]*.[0-9]*.[0-9]*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and attach to its release (e.g. 5.0.0)"
+        required: true
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
+  version:
+    name: Check tag matches the app version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      minor: ${{ steps.v.outputs.minor }}
+      prerelease: ${{ steps.v.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - id: v
+        run: |
+          app=$(python3 -c "import json;print(json.load(open('client/wails.json'))['info']['productVersion'])")
+          tag="${TAG#v}"
+          if [ "$app" != "$tag" ]; then
+            echo "::error::tag $TAG but client/wails.json says $app"
+            exit 1
+          fi
+          for f in ui/package.json client/frontend/package.json; do
+            v=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['version'])" "$f")
+            if [ "$v" != "$app" ]; then echo "::error file=$f::version $v, expected $app"; exit 1; fi
+          done
+          {
+            echo "version=$app"
+            echo "minor=$(echo "$app" | cut -d. -f1,2)"
+            if [[ "$app" == *-* ]]; then echo "prerelease=true"; else echo "prerelease=false"; fi
+          } >> "$GITHUB_OUTPUT"
+
   ci:
+    needs: version
     uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
 
   security:
+    needs: version
     uses: ./.github/workflows/security.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
 
   image:
     name: Image → GHCR
-    needs: [ci, security]
-    runs-on: ubuntu-latest
+    needs: [version, ci, security]
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write       # push to ghcr.io/<owner>/nulldrive
+      packages: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - name: Image name (GHCR requires lowercase)
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - uses: docker/setup-buildx-action@v3
@@ -46,19 +103,18 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE }}
-          # v1.2.3 → :1.2.3, :1.2, :v1.2.3 and :latest (latest only for
-          # non-prerelease tags).
+          # 5.0.1 → :5.0.1, :5.0 and :latest (not for pre-releases).
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=ref,event=tag
+            type=raw,value=${{ needs.version.outputs.version }}
+            type=raw,value=${{ needs.version.outputs.minor }},enable=${{ needs.version.outputs.prerelease == 'false' }}
+            type=raw,value=latest,enable=${{ needs.version.outputs.prerelease == 'false' }}
           flavor: |
-            latest=auto
+            latest=false
           labels: |
             org.opencontainers.image.title=Null Drive
             org.opencontainers.image.description=Self-hosted file sync server with a built-in web UI
-      - id: push
-        uses: docker/build-push-action@v6
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+      - uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -66,20 +122,23 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            VERSION=${{ github.ref_name }}
+            VERSION=v${{ env.VERSION }}
             COMMIT=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # SLSA provenance + SBOM attached to the image manifest.
           provenance: mode=max
           sbom: true
 
-  binaries:
-    name: Binaries
-    needs: [ci, security]
-    runs-on: ubuntu-latest
+  server:
+    name: Server archives, .deb, Docker archives
+    needs: [version, ci, security]
+    runs-on: ubuntu-24.04
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -88,26 +147,39 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: ui/package-lock.json
-      - name: Build UI
+      - name: Build the web app
         run: make ui-build
-      - name: Cross-compile and package
-        run: ./scripts/build-release.sh "$GITHUB_REF_NAME" "$GITHUB_SHA"
+      - name: Server archives (6 OS/arch)
+        run: ./scripts/build-release.sh "v$VERSION" "$(git rev-parse --short HEAD)"
+      - name: .deb packages
+        run: ./scripts/build-deb.sh "$VERSION" dist
+      - name: Docker image archives
+        run: ./scripts/build-image-offline.sh "$VERSION" dist
+      - name: Check the server reports the tagged version
+        run: |
+          tar -xzf "dist/nulldrive_${VERSION}_linux_amd64.tar.gz" -C "$RUNNER_TEMP"
+          "$RUNNER_TEMP/nulldrive_${VERSION}_linux_amd64/nulldrive" version | tee /dev/stderr | grep -q "v$VERSION "
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries
-          path: dist/*
+          name: server
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.deb
+            dist/*_docker_*.tar
           if-no-files-found: error
 
   desktop:
     name: Desktop app (Windows installer)
-    needs: [ci, security]
-    runs-on: ubuntu-latest
+    needs: [version, ci, security]
+    runs-on: ubuntu-24.04
     env:
+      VERSION: ${{ needs.version.outputs.version }}
       HAS_CERT: ${{ secrets.WINDOWS_CERT_PFX_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ env.TAG }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -121,9 +193,9 @@ jobs:
           cache-dependency-path: client/frontend/package-lock.json
       - name: Install NSIS and osslsigncode
         run: sudo apt-get update -qq && sudo apt-get install -y -qq nsis osslsigncode
-      # Optional code signing: add the repository secrets
-      # WINDOWS_CERT_PFX_BASE64 (base64 of a .pfx code-signing certificate)
-      # and WINDOWS_CERT_PASSWORD. Without them the build is unsigned.
+      # Optional code signing: repository secrets WINDOWS_CERT_PFX_BASE64
+      # (base64 of a .pfx code-signing certificate) and WINDOWS_CERT_PASSWORD.
+      # Without them the build is unsigned.
       - name: Code-signing certificate
         if: env.HAS_CERT == 'true'
         env:
@@ -131,10 +203,11 @@ jobs:
         run: |
           echo "$CERT" | base64 -d > "$RUNNER_TEMP/cert.pfx"
           echo "WINDOWS_CERT_PFX=$RUNNER_TEMP/cert.pfx" >> "$GITHUB_ENV"
-      - name: Build installer, portable zip and winget manifests
+      - name: Installer, portable zip and winget manifests
         env:
           WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
-        run: scripts/build-windows.sh "$GITHUB_REF_NAME"
+          RELEASE_TAG: ${{ env.TAG }}
+        run: scripts/build-windows.sh "$VERSION"
       - name: Remove certificate
         if: always()
         run: rm -f "$RUNNER_TEMP/cert.pfx"
@@ -149,18 +222,22 @@ jobs:
 
   store:
     name: Microsoft Store package (MSIX)
-    needs: desktop
+    needs: [version, desktop]
     runs-on: windows-latest
-    # Partner Center › Product management › Product identity. Set these as
-    # repository variables (Settings › Secrets and variables › Actions ›
-    # Variables); until then the package has placeholder identity values
-    # the Store would reject.
+    # Partner Center › Product management › Product identity, as repository
+    # variables (Settings › Secrets and variables › Actions › Variables):
+    # MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME. Until
+    # they're set, the package has placeholder identity values the Store
+    # would reject.
     env:
+      VERSION: ${{ needs.version.outputs.version }}
       MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
       MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
       MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/download-artifact@v4
         with:
           name: desktop
@@ -180,10 +257,7 @@ jobs:
           for v in MSIX_IDENTITY_NAME MSIX_PUBLISHER MSIX_PUBLISHER_DISPLAY_NAME; do
             [[ -n "${!v}" ]] || unset "$v"
           done
-          scripts/build-msix.sh "$GITHUB_REF_NAME"
-      # Not attached to the GitHub release: an unsigned MSIX doesn't install
-      # by double-click. It's the file to upload in Partner Center (the
-      # Store signs it); see docs/STORE.md.
+          scripts/build-msix.sh "$VERSION"
       - uses: actions/upload-artifact@v4
         with:
           name: store-package
@@ -191,45 +265,55 @@ jobs:
           if-no-files-found: error
 
   release:
-    name: GitHub Release
-    needs: [image, binaries, desktop]
-    runs-on: ubuntu-latest
+    name: Attach to the GitHub release
+    needs: [version, image, server, desktop]
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: binaries
+          name: server
           path: dist
       - uses: actions/download-artifact@v4
         with:
           name: desktop
           path: dist
       - name: Checksums for everything attached
-        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe > SHA256SUMS.txt
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-        run: |
-          image="ghcr.io/${GITHUB_REPOSITORY,,}"
-          prerelease=()
-          [[ "$TAG" == *-* ]] && prerelease=(--prerelease)
-          cat > notes.md <<NOTES
-          ## Install
+        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Null Drive ${{ needs.version.outputs.version }}
+          append_body: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.exe
+            dist/*.deb
+            dist/*_docker_*.tar
+            dist/SHA256SUMS.txt
+            dist/winget/*.yaml
+          body: |
+            ## Install
 
-          \`\`\`bash
-          docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ${image}:${TAG#v}
-          \`\`\`
+            **Server, Docker:**
+            ```
+            docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ${{ env.IMAGE }}:${{ needs.version.outputs.version }}
+            ```
+            No registry? `docker load -i nulldrive_${{ needs.version.outputs.version }}_docker_amd64.tar` (or `_arm64`), then run `nulldrive:${{ needs.version.outputs.version }}`.
 
-          **Desktop app (Windows 10/11, 64-bit):** \`NullDrive-${TAG#v}-Setup.exe\` below installs for your account, no admin needed. Prefer no installer? \`NullDrive_${TAG#v}_windows_amd64.zip\` is the same app, portable. If the build isn't code-signed, Windows SmartScreen asks first: *More info → Run anyway*.
+            **Server, Ubuntu / Debian:** `sudo apt install ./nulldrive_${{ needs.version.outputs.version }}_amd64.deb` (or `_arm64.deb`). Runs as the `nulldrive` service on port 8080.
 
-          Or download a server binary below (verify with \`SHA256SUMS.txt\`). Full guide: [docs/INSTALL.md](https://github.com/${GITHUB_REPOSITORY}/blob/${TAG}/docs/INSTALL.md).
-          NOTES
-          gh release create "$TAG" dist/*.tar.gz dist/*.zip dist/*.exe dist/SHA256SUMS.txt dist/winget/*.yaml \
-            --verify-tag \
-            --title "Null Drive $TAG" \
-            --notes-file notes.md \
-            --generate-notes \
-            "${prerelease[@]}"
+            **Server, anything else:** the `nulldrive_${{ needs.version.outputs.version }}_<os>_<arch>` archive for your system.
+
+            **Desktop app (Windows 10/11):** `NullDrive-${{ needs.version.outputs.version }}-Setup.exe` installs for your account, no admin needed; `NullDrive_${{ needs.version.outputs.version }}_windows_amd64.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
+
+            Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/INSTALL.md).
+
+            The Microsoft Store package is in this run's `store-package` artifact (upload it in Partner Center).

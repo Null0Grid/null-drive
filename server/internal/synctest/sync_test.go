@@ -19,14 +19,14 @@ import (
 	"testing"
 	"time"
 
-	srvapi "github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/server/internal/auth"
-	"github.com/nulldrive/nulldrive/server/internal/db"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/storage"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
-	nsync "github.com/nulldrive/nulldrive/shared/sync"
+	srvapi "github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/server/internal/auth"
+	"github.com/Null0Grid/null-drive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/storage"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
+	nsync "github.com/Null0Grid/null-drive/shared/sync"
 )
 
 // ---------- harness ----------

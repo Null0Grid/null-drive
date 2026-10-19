@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/ws"
+	"github.com/Null0Grid/null-drive/shared/ws"
 )
 
 // TestTOFUAgainstSelfSignedServer: probe the certificate, pin it, then

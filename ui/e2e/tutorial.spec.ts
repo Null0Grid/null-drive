@@ -161,7 +161,7 @@ test('getting started tutorial', async ({ browser, baseURL }) => {
   await hold(page, 6000);
 
   // ---- terminal ----
-  const cmd = 'docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ghcr.io/OWNER/nulldrive:latest';
+  const cmd = 'docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ghcr.io/null0grid/null-drive:latest';
   await page.setContent(card(`<div class="term"><div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i>
     <i style="background:#28c840"></i><span style="margin-left:10px">luc@homelab: ~</span></div><pre id="t"></pre></div>`));
   await page.evaluate(overlay);
@@ -175,9 +175,9 @@ test('getting started tutorial', async ({ browser, baseURL }) => {
     for (const ch of c) { t.innerHTML += ch; await sleep(28); }
     t.innerHTML += '\n';
     await sleep(700);
-    line('<span class="d">Unable to find image \'ghcr.io/OWNER/nulldrive:latest\' locally</span>');
+    line('<span class="d">Unable to find image \'ghcr.io/null0grid/null-drive:latest\' locally</span>');
     await sleep(500);
-    line('<span class="d">latest: Pulling from OWNER/nulldrive … Download complete</span>');
+    line('<span class="d">latest: Pulling from Null0Grid/null-drive … Download complete</span>');
     await sleep(700);
     line('3f9c1e7a2b54d0c86e1f…');
     await sleep(900);

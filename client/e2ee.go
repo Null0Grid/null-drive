@@ -10,10 +10,10 @@ import (
 
 	"github.com/zalando/go-keyring"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
-	nsync "github.com/nulldrive/nulldrive/shared/sync"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
+	nsync "github.com/Null0Grid/null-drive/shared/sync"
 )
 
 // End-to-end encryption on the desktop (Phase 7).

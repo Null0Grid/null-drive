@@ -8,7 +8,7 @@ name: nulldrive
 
 services:
   nulldrive:
-    image: ghcr.io/OWNER/nulldrive:latest   # pin a version (e.g. :v0.3.0) for predictable upgrades
+    image: ghcr.io/null0grid/null-drive:latest   # pin a version (e.g. :v0.3.0) for predictable upgrades
     container_name: nulldrive
     restart: unless-stopped
 

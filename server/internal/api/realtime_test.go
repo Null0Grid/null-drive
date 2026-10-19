@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	srvapi "github.com/nulldrive/nulldrive/server/internal/api"
-	"github.com/nulldrive/nulldrive/server/internal/realtime"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/ws"
+	srvapi "github.com/Null0Grid/null-drive/server/internal/api"
+	"github.com/Null0Grid/null-drive/server/internal/realtime"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/ws"
 )
 
 func registerDevice(t *testing.T, sess *client, name string) *client {

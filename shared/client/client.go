@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // Error is a non-2xx API response.

@@ -6,8 +6,8 @@ import (
 	"io"
 	"sort"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/storage"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/storage"
 )
 
 // Reader presents a manifest as one seekable stream, so v1 downloads (and

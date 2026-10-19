@@ -9,7 +9,9 @@
 #   winget/                             winget manifests for this version
 #
 # Needs: Go, Node 22 (npm), makensis (apt install nsis; choco install nsis),
-# go-winres (installed on demand). Optional signing: set WINDOWS_CERT_PFX
+# go-winres (installed on demand). RELEASE_TAG: the GitHub release tag the
+# winget manifests point at (default v<version>; CI passes the real tag,
+# which may have no "v"). Optional signing: set WINDOWS_CERT_PFX
 # (path to a .pfx code-signing certificate) and WINDOWS_CERT_PASSWORD, and
 # have osslsigncode installed; the exe and the installer are then signed.
 #
@@ -59,7 +61,7 @@ rm -f client/rsrc_windows_*.syso
 sign() {
   [[ -n "${WINDOWS_CERT_PFX:-}" ]] || return 0
   osslsigncode sign -pkcs12 "$WINDOWS_CERT_PFX" -pass "${WINDOWS_CERT_PASSWORD:-}" \
-    -n "Null Drive" -i "https://github.com/${GITHUB_REPOSITORY:-OWNER/nulldrive}" \
+    -n "Null Drive" -i "https://github.com/${GITHUB_REPOSITORY:-Null0Grid/null-drive}" \
     -h sha256 -ts http://timestamp.digicert.com -in "$1" -out "$1.signed"
   mv "$1.signed" "$1"
   echo "signed $(basename "$1")"
@@ -90,9 +92,9 @@ sign "$OUT/$SETUP"
 
 step "winget manifests"
 SHA=$(sha256sum "$OUT/$SETUP" | cut -d' ' -f1 | tr a-f A-F)
-REPO="${GITHUB_REPOSITORY:-OWNER/nulldrive}"
+REPO="${GITHUB_REPOSITORY:-Null0Grid/null-drive}"
 python3 scripts/winget-manifest.py --version "$VERSION" --sha256 "$SHA" \
-  --url "https://github.com/$REPO/releases/download/v$VERSION/$SETUP" \
+  --url "https://github.com/$REPO/releases/download/${RELEASE_TAG:-v$VERSION}/$SETUP" \
   --repo "$REPO" --out "$OUT/winget"
 
 step "Done"

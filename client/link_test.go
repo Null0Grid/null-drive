@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
 )
 
 const testID = "d28fc8c06bfa5b3229e9cada9b33e866"

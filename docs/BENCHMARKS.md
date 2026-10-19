@@ -37,7 +37,7 @@ On loopback, bandwidth is effectively unlimited (several GB/s), so the v1 downlo
 
 That is CPU work traded for bandwidth. At 100 Mbit/s the v1 download takes **86 s** of wire time; v2 needs **0.4 s** of wire time plus about 7 s of local hashing. The upload side has the same trade-off but it pays off even on loopback (7.6 s → 3.8 s), because the server no longer ingests 1 GiB.
 
-Two optimizations would remove most of the local cost, and are listed as follow-ups in HANDOFF.md:
+Two optimizations would remove most of the local cost, and were listed as follow-ups in the Phase 6 handoff:
 - Keep each synced file's manifest in the local index, so an unchanged local copy (same size and mtime as its base) doesn't have to be re-chunked.
 - Skip the final whole-file hash when every chunk was verified individually (it's kept for now as defence in depth).
 

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/server/internal/search/searchtest"
+	"github.com/Null0Grid/null-drive/server/internal/search/searchtest"
 )
 
 func readerOf(b []byte) func(int64) ([]byte, error) {

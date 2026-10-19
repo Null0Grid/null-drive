@@ -16,10 +16,10 @@ import (
 
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/nulldrive/nulldrive/shared/client"
-	"github.com/nulldrive/nulldrive/shared/mdns"
-	"github.com/nulldrive/nulldrive/shared/netutil"
-	"github.com/nulldrive/nulldrive/shared/pathutil"
+	"github.com/Null0Grid/null-drive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/mdns"
+	"github.com/Null0Grid/null-drive/shared/netutil"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
 )
 
 // This file is the "connect to a server" half of first-run setup: LAN

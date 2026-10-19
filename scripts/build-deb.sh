@@ -47,7 +47,7 @@ EOF
   cat >"$R/lib/systemd/system/nulldrive.service" <<'EOF'
 [Unit]
 Description=Null Drive
-Documentation=https://github.com/nulldrive/nulldrive
+Documentation=https://github.com/Null0Grid/null-drive
 After=network-online.target
 Wants=network-online.target
 
@@ -82,7 +82,7 @@ Maintainer: Null Drive <noreply@nulldrive.invalid>
 Section: net
 Priority: optional
 Depends: adduser
-Homepage: https://github.com/nulldrive/nulldrive
+Homepage: https://github.com/Null0Grid/null-drive
 Description: Self-hosted file sync server with a built-in web UI
  Null Drive keeps files in sync between your computers through a server you
  run yourself: chunked, deduplicated storage with version history, a web

@@ -3,7 +3,7 @@
   "private": true,
   "version": "5.0.0",
   "description": "Null Drive UI: the shared Svelte component library (src/lib) and the web app (src/web).",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "type": "module",
   "exports": {
     ".": "./src/lib/index.ts",

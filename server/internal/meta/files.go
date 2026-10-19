@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/pathutil"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
 )
 
 var (

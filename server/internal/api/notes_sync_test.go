@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // The Drive side of Null Notes two-way sync (Phase 7): every write

@@ -7,7 +7,7 @@
 # Then change the host path below to the dataset's mount point.
 services:
   nulldrive:
-    image: ghcr.io/OWNER/nulldrive:latest
+    image: ghcr.io/null0grid/null-drive:latest
     container_name: nulldrive
     restart: unless-stopped
     user: "568:568"            # TrueNAS's standard "apps" user

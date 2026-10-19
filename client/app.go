@@ -16,11 +16,11 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/nulldrive/nulldrive/shared/client"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
-	"github.com/nulldrive/nulldrive/shared/logfile"
-	"github.com/nulldrive/nulldrive/shared/pathutil"
-	nsync "github.com/nulldrive/nulldrive/shared/sync"
+	"github.com/Null0Grid/null-drive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
+	"github.com/Null0Grid/null-drive/shared/logfile"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
+	nsync "github.com/Null0Grid/null-drive/shared/sync"
 )
 
 // App is bound to the frontend: every exported method is callable from

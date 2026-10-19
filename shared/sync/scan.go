@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/client"
 
-	"github.com/nulldrive/nulldrive/shared/pathutil"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
 )
 
 // ErrRootMissing means the sync folder doesn't exist (an unplugged drive, a

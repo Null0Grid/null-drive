@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/chunkstore"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/internal/noteid"
-	"github.com/nulldrive/nulldrive/server/storage"
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
-	"github.com/nulldrive/nulldrive/shared/pathutil"
+	"github.com/Null0Grid/null-drive/server/internal/chunkstore"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/noteid"
+	"github.com/Null0Grid/null-drive/server/storage"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
+	"github.com/Null0Grid/null-drive/shared/pathutil"
 )
 
 // The v2 API (Phase 6) moves file content as content-defined chunks:

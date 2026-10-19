@@ -15,9 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
-	"github.com/nulldrive/nulldrive/shared/e2ee"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/e2ee"
 )
 
 const passphrase = "a long encryption passphrase"

@@ -3,7 +3,7 @@
 # Requirements: Go 1.24+, Node 22+ (UI), golangci-lint (lint), curl + jq (smoke).
 
 BINARY   := bin/nulldrive
-PKG      := github.com/nulldrive/nulldrive/server/internal/buildinfo
+PKG      := github.com/Null0Grid/null-drive/server/internal/buildinfo
 VERSION  ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT   ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 LDFLAGS  := -s -w -X $(PKG).Version=$(VERSION) -X $(PKG).Commit=$(COMMIT)

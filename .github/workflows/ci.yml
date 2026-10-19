@@ -1,18 +1,29 @@
-# CI: runs on every push and PR, and is reused by release.yml as a gate
-# (a tag can only be released if this passes).
-name: ci
+# CI: runs on every push to main and on pull requests, and is reused by
+# release.yml as a gate (a tag can only be released if this passes).
+#   Linux:   Go tests (race) + lint, go.mod/go.sum tidy, web app tests and type
+#            check, build + API smoke test + Playwright e2e, the E2EE
+#            reference client, release packaging (.deb installed for real,
+#            Docker archive run), Docker build, deploy templates, workflows
+#   Windows: shared Go packages, the desktop client (Go + frontend), a native
+#            NullDrive.exe build, the MSIX package
+name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
   workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to test (release.yml passes the tag)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ inputs.ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -21,9 +32,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: go.mod and go.sum are tidy (server and desktop client)
+        run: |
+          go mod tidy -diff
+          (cd client && go mod tidy -diff)
       - name: Test (race detector)
         run: go test -race -count=1 ./...
       - name: golangci-lint
@@ -39,6 +56,8 @@ jobs:
         working-directory: ui
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -56,6 +75,8 @@ jobs:
     needs: [go, ui]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -68,6 +89,13 @@ jobs:
         run: make build
       - name: API smoke test
         run: ./scripts/smoke.sh bin/nulldrive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: E2EE reference client (test vectors + live flow against the binary)
+        run: |
+          pip install pynacl
+          ./scripts/e2ee-reference/run.sh bin/nulldrive
       - name: Install Playwright browser
         working-directory: ui
         run: npx playwright install --with-deps chromium
@@ -86,6 +114,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - name: hadolint
         uses: hadolint/hadolint-action@v3.1.0
         with:
@@ -118,6 +148,8 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -154,6 +186,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref }}
           fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
@@ -185,6 +218,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/download-artifact@v4
         with:
           name: NullDrive-windows
@@ -206,11 +241,54 @@ jobs:
           path: dist/*.msix
           retention-days: 14
 
+  packages:
+    name: Release packaging (.deb + Docker archive, installed and run)
+    runs-on: ubuntu-24.04
+    needs: [go, ui]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Build what release.yml builds
+        run: |
+          make ui-build
+          ./scripts/build-release.sh v0.0.0-ci "$(git rev-parse --short HEAD)"
+          ./scripts/build-deb.sh 0.0.0-ci dist
+          ./scripts/build-image-offline.sh 0.0.0-ci dist
+          ls -la dist
+      - name: Install the .deb (systemd starts the service)
+        run: |
+          sudo apt-get install -y ./dist/nulldrive_0.0.0-ci_amd64.deb
+          for _ in $(seq 30); do curl -fsS http://127.0.0.1:8080/api/v1/health && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8080/api/v1/health | grep -q '"status":"ok"'
+          systemctl is-active nulldrive
+          test "$(stat -c %U /var/lib/nulldrive/nulldrive.db)" = nulldrive
+          sudo apt-get purge -y nulldrive
+          if systemctl is-active --quiet nulldrive; then echo "::error::still running after purge"; exit 1; fi
+          test -d /var/lib/nulldrive   # data is kept, even on purge
+      - name: Load and run the Docker archive
+        run: |
+          docker load -i dist/nulldrive_0.0.0-ci_docker_amd64.tar
+          docker run -d --name nd -p 18080:8080 nulldrive:0.0.0-ci
+          for _ in $(seq 30); do curl -fsS http://127.0.0.1:18080/api/v1/health && break; sleep 1; done
+          curl -fsS http://127.0.0.1:18080/api/v1/health | grep -q '"version":"v0.0.0-ci"'
+          docker exec nd /nulldrive version | grep -q v0.0.0-ci
+
   actionlint:
-    name: Lint workflows
+    name: Lint workflows, versions, scripts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -218,3 +296,13 @@ jobs:
         run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
           "$(go env GOPATH)/bin/actionlint" -color
+      - name: App version is the same everywhere
+        run: |
+          app=$(python3 -c "import json;print(json.load(open('client/wails.json'))['info']['productVersion'])")
+          for f in ui/package.json client/frontend/package.json; do
+            v=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['version'])" "$f")
+            if [ "$v" != "$app" ]; then echo "::error file=$f::version $v, but client/wails.json says $app"; exit 1; fi
+          done
+          echo "version $app"
+      - name: Shell scripts (shellcheck)
+        run: shellcheck scripts/*.sh scripts/e2ee-reference/*.sh

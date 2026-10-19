@@ -6,8 +6,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/client"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/client"
 )
 
 // ErrWholeFile: encrypted accounts only use chunked (API v2) transfers. A

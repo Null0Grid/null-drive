@@ -25,9 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/storage"
-	"github.com/nulldrive/nulldrive/shared/chunker"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/storage"
+	"github.com/Null0Grid/null-drive/shared/chunker"
 )
 
 // Store is the chunk store.

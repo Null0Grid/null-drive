@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/auth"
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/server/internal/auth"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 func login(anon *client, user, pass, code string) resp {

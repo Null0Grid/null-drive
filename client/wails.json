@@ -7,13 +7,13 @@
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "OWNER"
+    "name": "NULLGRID"
   },
   "info": {
     "companyName": "Null Drive",
     "productName": "Null Drive",
     "productVersion": "5.0.0",
-    "copyright": "MIT License",
+    "copyright": "Copyright (c) 2026 NULLGRID",
     "comments": "Self-hosted file sync client",
     "protocols": [
       {

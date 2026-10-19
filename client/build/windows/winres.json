@@ -43,7 +43,7 @@
             "FileDescription": "Null Drive",
             "FileVersion": "{{VERSION}}",
             "InternalName": "NullDrive",
-            "LegalCopyright": "MIT License",
+            "LegalCopyright": "Copyright (c) 2026 NULLGRID",
             "OriginalFilename": "NullDrive.exe",
             "ProductName": "Null Drive",
             "ProductVersion": "{{VERSION}}"

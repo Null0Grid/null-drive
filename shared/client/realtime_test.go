@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/ws"
+	"github.com/Null0Grid/null-drive/shared/ws"
 )
 
 type recorder struct {

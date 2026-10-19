@@ -10,10 +10,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/nulldrive/nulldrive/server/internal/auth"
-	"github.com/nulldrive/nulldrive/server/internal/config"
-	"github.com/nulldrive/nulldrive/server/internal/db"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/auth"
+	"github.com/Null0Grid/null-drive/server/internal/config"
+	"github.com/Null0Grid/null-drive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
 )
 
 // resetPassword is the recovery path for a forgotten password: whoever can

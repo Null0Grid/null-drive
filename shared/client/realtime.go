@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nulldrive/nulldrive/shared/api"
-	"github.com/nulldrive/nulldrive/shared/ws"
+	"github.com/Null0Grid/null-drive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/ws"
 )
 
 // LiveState describes the realtime connection.

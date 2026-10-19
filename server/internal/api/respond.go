@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

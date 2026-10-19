@@ -13,7 +13,7 @@ import (
 
 	"github.com/ledongthuc/pdf"
 
-	"github.com/nulldrive/nulldrive/server/internal/noteid"
+	"github.com/Null0Grid/null-drive/server/internal/noteid"
 )
 
 // What gets read from a file, and how much.

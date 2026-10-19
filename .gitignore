@@ -35,3 +35,28 @@ node_modules/
 
 # Python
 __pycache__/
+
+# Release and package outputs (built by scripts/ and CI, never committed)
+*.deb
+*.msix
+*.appx
+*.exe
+*.syso
+/client/rsrc*
+*.tar.gz
+nulldrive_*_docker_*.tar
+SHA256SUMS.txt
+
+# Certificates and secrets
+*.pfx
+*.p12
+*.pem
+*.key
+.env
+.env.*
+
+# Test runs
+/ui/.e2e-data/
+/ui/test-results/
+/ui/playwright-report/
+/client/frontend/test-results/

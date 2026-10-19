@@ -11,7 +11,7 @@ set -euo pipefail
 VERSION="${1:?usage: build-release.sh <version> [commit]}"
 COMMIT="${2:-$(git rev-parse --short HEAD 2>/dev/null || echo none)}"
 OUT="${OUT:-dist}"
-PKG=github.com/nulldrive/nulldrive/server/internal/buildinfo
+PKG=github.com/Null0Grid/null-drive/server/internal/buildinfo
 TARGETS=(
   linux/amd64 linux/arm64
   darwin/amd64 darwin/arm64

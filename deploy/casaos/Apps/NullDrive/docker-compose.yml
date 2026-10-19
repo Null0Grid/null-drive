@@ -5,7 +5,7 @@ name: nulldrive
 
 services:
   nulldrive:
-    image: ghcr.io/OWNER/nulldrive:5.0.0
+    image: ghcr.io/null0grid/null-drive:5.0.0
     container_name: nulldrive
     restart: unless-stopped
     # CasaOS creates AppData folders owned by root, and the image's default
@@ -40,18 +40,18 @@ services:
       retries: 3
 
 x-casaos:
-  id: io.github.OWNER.nulldrive
+  id: io.github.null0grid.null-drive
   main: nulldrive
   index: /
   port_map: "8080"
   scheme: http
-  icon: https://raw.githubusercontent.com/OWNER/nulldrive/main/deploy/assets/icon.png
-  thumbnail: https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-list-dark.png
+  icon: https://raw.githubusercontent.com/Null0Grid/null-drive/main/deploy/assets/icon.png
+  thumbnail: https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/files-list-dark.png
   screenshot_link:
-    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-list-dark.png
-    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/files-grid-dark.png
-    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/setup-1-welcome.png
-    - https://raw.githubusercontent.com/OWNER/nulldrive/main/docs/screenshots/settings-dark.png
+    - https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/files-list-dark.png
+    - https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/files-grid-dark.png
+    - https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/setup-1-welcome.png
+    - https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/settings-dark.png
   title:
     en_US: Null Drive
   tagline:
@@ -71,8 +71,8 @@ x-casaos:
         After installing, open the app and complete the setup wizard right away:
         until an admin account exists, anyone who can reach the page can create it.
         Files are stored in /DATA/AppData/nulldrive/data.
-  author: OWNER
-  developer: OWNER
+  author: NULLGRID
+  developer: NULLGRID
   category: Productivity
   architectures:
     - amd64
@@ -81,7 +81,7 @@ x-casaos:
   update_at: "2026-10-19"
   release_notes:
     en_US: "5.0: Null Grid release. Search for Null Search, nulldrive:// links, Null Notes backup, two-way sync and end-to-end encrypted sync."
-  website: https://github.com/OWNER/nulldrive
-  repo: https://github.com/OWNER/nulldrive
-  support: https://github.com/OWNER/nulldrive/issues
-  docs: https://github.com/OWNER/nulldrive/blob/main/docs/INSTALL.md
+  website: https://github.com/Null0Grid/null-drive
+  repo: https://github.com/Null0Grid/null-drive
+  support: https://github.com/Null0Grid/null-drive/issues
+  docs: https://github.com/Null0Grid/null-drive/blob/main/docs/INSTALL.md

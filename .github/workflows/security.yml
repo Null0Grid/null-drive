@@ -10,6 +10,11 @@ on:
   schedule:
     - cron: "23 5 * * 1" # Mondays 05:23 UTC
   workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to scan (release.yml passes the tag)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -20,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -41,6 +48,8 @@ jobs:
         working-directory: client
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -62,6 +71,8 @@ jobs:
         working-directory: ${{ matrix.dir }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

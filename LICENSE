@@ -1,21 +1,31 @@
-MIT License
+Copyright (c) 2026 NULLGRID. All rights reserved.
 
-Copyright (c) 2026 <OWNER NAME>
+This source code is made available for viewing and reference. No license is
+granted to copy, modify, distribute or use it, except as the copyright holder
+allows in writing.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Third-party components keep their own licenses, which apply to those
+components only:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Go modules (full list with versions in go.mod / go.sum and client/go.mod /
+client/go.sum):
+  - modernc.org/sqlite, modernc.org/libc and related modernc.org modules (BSD-3-Clause)
+  - golang.org/x/crypto, x/sys, x/term (BSD-3-Clause)
+  - github.com/ledongthuc/pdf (BSD-3-Clause)
+  - github.com/wailsapp/wails/v2, desktop app only (MIT)
+  - fyne.io/systray, desktop app only (Apache-2.0)
+  - github.com/fsnotify/fsnotify, desktop app only (BSD-3-Clause)
+  - github.com/zalando/go-keyring, desktop app only (MIT)
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+JavaScript packages bundled into the web and desktop apps (full list in
+ui/package-lock.json and client/frontend/package-lock.json):
+  - Svelte runtime (MIT)
+  - libsodium-wrappers-sumo / libsodium (ISC)
+  - qrcode-generator (MIT)
+
+Fonts (SIL Open Font License 1.1, via @fontsource):
+  - JetBrains Mono, Silkscreen, VT323
+
+The Docker images (Dockerfile and scripts/build-image-offline.sh) include the
+CA certificate bundle (Mozilla Public License 2.0) and the IANA time zone
+database (public domain).

@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/server/internal/auth"
-	"github.com/nulldrive/nulldrive/server/internal/db"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/auth"
+	"github.com/Null0Grid/null-drive/server/internal/db"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
 )
 
 func env(m map[string]string) func(string) string { return func(k string) string { return m[k] } }

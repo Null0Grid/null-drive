@@ -9,12 +9,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nulldrive/nulldrive/server/internal/auth"
-	"github.com/nulldrive/nulldrive/server/internal/chunkstore"
-	"github.com/nulldrive/nulldrive/server/internal/meta"
-	"github.com/nulldrive/nulldrive/server/internal/realtime"
-	"github.com/nulldrive/nulldrive/server/internal/search"
-	"github.com/nulldrive/nulldrive/server/storage"
+	"github.com/Null0Grid/null-drive/server/internal/auth"
+	"github.com/Null0Grid/null-drive/server/internal/chunkstore"
+	"github.com/Null0Grid/null-drive/server/internal/meta"
+	"github.com/Null0Grid/null-drive/server/internal/realtime"
+	"github.com/Null0Grid/null-drive/server/internal/search"
+	"github.com/Null0Grid/null-drive/server/storage"
 )
 
 // DefaultGCGrace: unreferenced chunks are kept this long, so a client that

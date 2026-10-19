@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/nulldrive/nulldrive/shared/api"
+	"github.com/Null0Grid/null-drive/shared/api"
 )
 
 // ClaimPairing exchanges a pairing code for a device token. It needs no

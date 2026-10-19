@@ -4,7 +4,7 @@ import (
 	"net/netip"
 	"testing"
 
-	"github.com/nulldrive/nulldrive/shared/mdns"
+	"github.com/Null0Grid/null-drive/shared/mdns"
 )
 
 func TestToDiscoveredPrefersReachableIPv4(t *testing.T) {
