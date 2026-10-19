@@ -31,10 +31,10 @@ jobs:
     name: Go tests + lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: go.mod and go.sum are tidy (server and desktop client)
@@ -51,7 +51,7 @@ jobs:
           grep -E -A4 -- '--- FAIL|^panic:|WARNING: DATA RACE' "$RUNNER_TEMP/test.log" | head -60 | sed 's/^/::error::/'
           exit "$status"
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: v2.14
 
@@ -62,10 +62,10 @@ jobs:
       run:
         working-directory: ui
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -81,13 +81,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [go, ui]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -96,7 +96,7 @@ jobs:
         run: make build
       - name: API smoke test
         run: ./scripts/smoke.sh bin/nulldrive
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: E2EE reference client (test vectors + live flow against the binary)
@@ -109,7 +109,7 @@ jobs:
       - name: Playwright e2e
         working-directory: ui
         run: npx playwright test --project=e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -120,16 +120,16 @@ jobs:
     name: Docker build (amd64 + arm64, no push)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
       - name: hadolint
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: Dockerfile
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -154,16 +154,16 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache-dependency-path: |
             go.sum
             client/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -196,17 +196,17 @@ jobs:
     name: Windows installer (cross-built on Linux)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache-dependency-path: |
             go.sum
             client/go.sum
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -215,7 +215,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq nsis
       - name: Build installer, portable zip and winget manifests
         run: scripts/build-windows.sh "$(node -p "require('./client/wails.json').info.productVersion")-ci.${GITHUB_RUN_NUMBER}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: NullDrive-windows
           path: |
@@ -229,10 +229,10 @@ jobs:
     # MakeAppx and MakePri come with the Windows SDK on the Windows image.
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: NullDrive-windows
           path: dist
@@ -247,7 +247,7 @@ jobs:
       - name: Build the MSIX (test identity)
         shell: bash
         run: scripts/build-msix.sh "$(node -p "require('./client/wails.json').info.productVersion")-ci.${GITHUB_RUN_NUMBER}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: NullDrive-msix
           path: dist/*.msix
@@ -258,13 +258,13 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [go, ui]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -301,10 +301,10 @@ jobs:
     name: Lint workflows, versions, scripts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: actionlint (pinned)
