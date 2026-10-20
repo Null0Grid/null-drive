@@ -244,7 +244,7 @@ jobs:
           New-Item -ItemType Directory -Force client/build/bin | Out-Null
           $exe = Get-ChildItem portable -Recurse -Filter NullDrive.exe | Select-Object -First 1
           Copy-Item $exe.FullName client/build/bin/NullDrive.exe
-      - name: Build the MSIX (test identity)
+      - name: Build the MSIX (Partner Center identity)
         shell: bash
         run: scripts/build-msix.sh "$(node -p "require('./client/wails.json').info.productVersion")-ci.${GITHUB_RUN_NUMBER}"
       - uses: actions/upload-artifact@v7

@@ -224,11 +224,9 @@ jobs:
     name: Microsoft Store package (MSIX)
     needs: [version, desktop]
     runs-on: windows-latest
-    # Partner Center › Product management › Product identity, as repository
-    # variables (Settings › Secrets and variables › Actions › Variables):
-    # MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME. Until
-    # they're set, the package has placeholder identity values the Store
-    # would reject.
+    # The Partner Center identity (NULLGRID.NullDrive, Store ID 9P3NQGJ8ZZMG)
+    # is build-msix.sh's default. Repository variables MSIX_IDENTITY_NAME,
+    # MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME override it if ever needed.
     env:
       VERSION: ${{ needs.version.outputs.version }}
       MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
@@ -296,7 +294,7 @@ jobs:
         run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Image name
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
-      - uses: softprops/action-gh-release@v3
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
           name: Null Drive ${{ needs.version.outputs.version }}
@@ -327,4 +325,4 @@ jobs:
 
             Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/INSTALL.md).
 
-            The Microsoft Store package is in this run's `store-package` artifact (upload it in Partner Center).
+            **Microsoft Store:** https://apps.microsoft.com/detail/9P3NQGJ8ZZMG (updates itself). The Store package for this version is in this run's `store-package` artifact (upload it in Partner Center).

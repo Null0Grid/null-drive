@@ -162,7 +162,7 @@ Download `NullDrive-<version>-Setup.exe` from the [latest release](https://githu
 - **SmartScreen:** until releases are code-signed, Windows may say it "protected your PC". Choose *More info → Run anyway*. Verify the file against `SHA256SUMS.txt` in the release if you like: `Get-FileHash NullDrive-*-Setup.exe`.
 - **Updating:** run the newer installer. It closes the running app cleanly first; your settings and sync state are kept.
 - **No installer:** the release also has `NullDrive-<version>-portable.zip`, the same app as a portable `.exe`.
-- **Microsoft Store:** once published, the Store build updates itself and has no SmartScreen step. It keeps its own settings, so install either it or the installer, not both ([STORE.md](STORE.md)).
+- **Microsoft Store:** [Null Drive in the Store](https://apps.microsoft.com/detail/9P3NQGJ8ZZMG) updates itself and has no SmartScreen step. It keeps its own settings, so install either it or the installer, not both ([STORE.md](STORE.md)).
 - **Links:** all three register `nulldrive://` links (Null Search results) for your account; see [Search from Null Search](#search-from-null-search).
 - **Uninstalling:** *Settings → Apps → Null Drive → Uninstall*. Your synced folder is never deleted; you're asked whether to also remove settings and the saved sign-in.
 - **winget:** once the package is accepted into the winget repository, `winget install NULLGRID.NullDrive`. The manifests are attached to every release (submitting them: [client/README.md](../client/README.md)).

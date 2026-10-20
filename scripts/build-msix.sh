@@ -5,12 +5,15 @@
 #
 # Output: dist/NullDrive_<v>_x64.msix
 #
-# Package identity comes from Partner Center (Product management › Product
-# identity). Defaults are placeholders for local test builds:
-#   MSIX_IDENTITY_NAME            default NullDrive.NullDrive
-#   MSIX_PUBLISHER                default CN=Null Drive Dev  (must equal the
-#                                 signing certificate's subject)
-#   MSIX_PUBLISHER_DISPLAY_NAME   default Null Drive
+# Package identity comes from Partner Center (Null Drive › Product
+# management › Product identity; Store ID 9P3NQGJ8ZZMG). The defaults are
+# those values, so every build is ready to upload. Override for test builds:
+#   MSIX_IDENTITY_NAME            default NULLGRID.NullDrive
+#   MSIX_PUBLISHER                default CN=8685350B-5C4C-4422-9CDF-8AEB87F50B2F
+#                                 (a sideload test must be signed by a
+#                                 certificate with this subject: override it
+#                                 with your test certificate's, see STORE.md)
+#   MSIX_PUBLISHER_DISPLAY_NAME   default NULLGRID
 #
 # For the Store, upload the unsigned .msix: the Store signs it. To install
 # a test build on a PC (sideloading), sign it: set MSIX_CERT_PFX (+
@@ -35,9 +38,9 @@ IFS=. read -r MA MI PA <<<"$NUM"
 # The Store requires the fourth part to be 0.
 VERSION4="${MA:-0}.${MI:-0}.${PA:-0}.0"
 
-NAME="${MSIX_IDENTITY_NAME:-NullDrive.NullDrive}"
-PUBLISHER="${MSIX_PUBLISHER:-CN=Null Drive Dev}"
-PUBLISHER_DISPLAY="${MSIX_PUBLISHER_DISPLAY_NAME:-Null Drive}"
+NAME="${MSIX_IDENTITY_NAME:-NULLGRID.NullDrive}"
+PUBLISHER="${MSIX_PUBLISHER:-CN=8685350B-5C4C-4422-9CDF-8AEB87F50B2F}"
+PUBLISHER_DISPLAY="${MSIX_PUBLISHER_DISPLAY_NAME:-NULLGRID}"
 
 EXE="$ROOT/client/build/bin/NullDrive.exe"
 SRC="$ROOT/client/build/windows/msix"

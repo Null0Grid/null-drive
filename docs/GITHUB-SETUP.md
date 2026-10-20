@@ -8,7 +8,7 @@ The repository is [Null0Grid/null-drive](https://github.com/Null0Grid/null-drive
 - [ ] **Settings → Actions → General → Actions permissions:** "Allow all actions and reusable workflows", or an allow-list: `actions/*`, `docker/*`, `github/codeql-action/*`, `golangci/golangci-lint-action`, `hadolint/hadolint-action`, `softprops/action-gh-release`.
 - [ ] **Settings → Actions → General → Workflow permissions:** keep the default, "Read repository contents and packages permissions". Each job asks for what it needs: `packages: write` for the image, `contents: write` to attach release files.
 - [ ] **Settings → Code security:** turn on *Dependency graph*, *Dependabot alerts* and *Dependabot security updates*. Version updates are configured in `.github/dependabot.yml`.
-- [ ] **Microsoft Store identity** (when the app is reserved in Partner Center): **Settings → Secrets and variables → Actions → Variables**: `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, `MSIX_PUBLISHER_DISPLAY_NAME`, from Partner Center → Product management → Product identity. Until then the `store-package` MSIX has placeholder identity values. See [STORE.md](STORE.md).
+- [x] **Microsoft Store identity:** reserved in Partner Center (Store ID `9P3NQGJ8ZZMG`) and built into `scripts/build-msix.sh`, so the `store-package` MSIX is ready to upload. No repository variables needed. See [STORE.md](STORE.md).
 - [ ] *(Optional)* Code signing for the Windows installer: repository secrets `WINDOWS_CERT_PFX_BASE64` (base64 of a `.pfx`) and `WINDOWS_CERT_PASSWORD`. Without them the installer is unsigned and SmartScreen asks once.
 - [ ] *(Recommended)* **Settings → Rules → Rulesets** for `main`: require a pull request and the CI checks.
 

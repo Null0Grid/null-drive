@@ -7,16 +7,17 @@ What the package declares, and why: [DESIGN.md › Microsoft Store](DESIGN.md#mi
 ## One-time setup
 
 1. **Developer account.** [Partner Center](https://partner.microsoft.com/dashboard) › sign up as an individual developer (no registration fee for individuals since September 2025).
-2. **Reserve the name.** *Apps and games › New product › MSIX or PWA app* › "Null Drive" (or the name you'll publish under).
-3. **Copy the identity.** *Product management › Product identity* shows three values. Add them as GitHub repository **variables** (*Settings › Secrets and variables › Actions › Variables*):
+2. **Reserve the name.** Done: *Apps and games › Null Drive*, Store ID **9P3NQGJ8ZZMG**, listing https://apps.microsoft.com/detail/9P3NQGJ8ZZMG.
+3. **The identity** (*Product management › Product identity*) is built into `scripts/build-msix.sh` as its defaults, so every build, local or CI, is ready to upload:
 
-   | Variable | Partner Center field | Looks like |
+   | Partner Center field | Value | Override with |
    |---|---|---|
-   | `MSIX_IDENTITY_NAME` | Package/Identity/Name | `12345YourName.NullDrive` |
-   | `MSIX_PUBLISHER` | Package/Identity/Publisher | `CN=1A2B3C4D-5E6F-…` |
-   | `MSIX_PUBLISHER_DISPLAY_NAME` | Package/Properties/PublisherDisplayName | `Your Name` |
+   | Package/Identity/Name | `NULLGRID.NullDrive` | `MSIX_IDENTITY_NAME` |
+   | Package/Identity/Publisher | `CN=8685350B-5C4C-4422-9CDF-8AEB87F50B2F` | `MSIX_PUBLISHER` |
+   | Package/Properties/PublisherDisplayName | `NULLGRID` | `MSIX_PUBLISHER_DISPLAY_NAME` |
+   | Package/Properties/DisplayName | `Null Drive` (in the manifest) | |
 
-   They aren't secrets: they end up in the public package. Without them the build uses placeholders the Store rejects.
+   They aren't secrets: they end up in the public package. Package family name: `NULLGRID.NullDrive_yb898v9ybphdc`. The repository variables of the same names still override them in the release workflow, but aren't needed.
 
 ## Building the package
 
@@ -61,7 +62,7 @@ Import-PfxCertificate -FilePath test.pfx -CertStoreLocation Cert:\LocalMachine\T
 
 ```bash
 # Git Bash: build and sign (osslsigncode, or signtool from the SDK)
-MSIX_CERT_PFX=test.pfx MSIX_CERT_PASSWORD=test make msix
+MSIX_PUBLISHER="CN=Null Drive Dev" MSIX_CERT_PFX=test.pfx MSIX_CERT_PASSWORD=test make msix   # the test certificate's subject
 ```
 
 Then double-click the `.msix` (or `Add-AppxPackage .\dist\NullDrive_*.msix`) and check:
