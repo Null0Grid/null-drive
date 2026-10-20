@@ -1,6 +1,6 @@
 # Null Drive — developer tasks. Run `make help` for a list.
 #
-# Requirements: Go 1.24+, Node 22+ (UI), golangci-lint (lint), curl + jq (smoke).
+# Requirements: Go 1.26+, Node 22+ (UI), golangci-lint (lint), curl + jq (smoke).
 
 BINARY   := bin/nulldrive
 PKG      := github.com/Null0Grid/null-drive/server/internal/buildinfo
