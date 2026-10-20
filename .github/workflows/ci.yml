@@ -41,8 +41,16 @@ jobs:
           go-version-file: go.mod
       - name: go.mod and go.sum are tidy (server and desktop client)
         run: |
-          go mod tidy -diff
-          (cd client && go mod tidy -diff)
+          # The diff (or download error) is repeated as annotations.
+          status=0
+          for dir in . client; do
+            if ! (cd "$dir" && go mod tidy -diff) > "$RUNNER_TEMP/tidy.log" 2>&1; then
+              status=1
+              cat "$RUNNER_TEMP/tidy.log"
+              head -40 "$RUNNER_TEMP/tidy.log" | sed "s|^|::error::go mod tidy ($dir): |"
+            fi
+          done
+          exit "$status"
       - name: Test (race detector)
         run: |
           # Failures are repeated as annotations, so they show on the run's
