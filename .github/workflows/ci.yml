@@ -4,6 +4,8 @@
 #            check, build + API smoke test + Playwright e2e, the E2EE
 #            reference client, release packaging (.deb installed for real,
 #            Docker archive run), Docker build, deploy templates, workflows
+#   Linux desktop app: AppImage, .rpm, .deb, .tar.gz built, checked,
+#            installed, and a real sync under Xvfb with the Secret Service keyring
 #   Windows: shared Go packages, the desktop client (Go + frontend), a native
 #            NullDrive.exe build, the MSIX package
 name: CI
@@ -296,6 +298,82 @@ jobs:
           for _ in $(seq 30); do curl -fsS http://127.0.0.1:18080/api/v1/health && break; sleep 1; done
           curl -fsS http://127.0.0.1:18080/api/v1/health | grep -q '"version":"v0.0.0-ci"'
           docker exec nd /nulldrive version | grep -q v0.0.0-ci
+
+  linux-desktop:
+    name: Desktop app (Linux) — build, packages, sync e2e
+    runs-on: ubuntu-24.04
+    needs: [go, ui]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            go.sum
+            client/go.sum
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/frontend/package-lock.json
+            ui/package-lock.json
+      - name: Install WebKitGTK, GTK and test tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev \
+            xvfb gnome-keyring libsecret-tools desktop-file-utils xdg-utils rpm
+      - name: Build AppImage, .rpm, .deb and .tar.gz
+        run: |
+          (cd ui && npm ci --no-audit --no-fund)
+          scripts/build-linux-desktop.sh 0.0.0-ci dist
+      - name: Go vet + tests (client, real Linux)
+        working-directory: client
+        run: |
+          go vet -tags webkit2_41 ./...
+          go test -tags webkit2_41 ./...
+      - name: Check the packages
+        run: |
+          fail() { echo "::error::$*"; exit 1; }
+          desktop-file-validate client/build/linux/nulldrive-desktop.desktop || fail "invalid .desktop file"
+          rpm=dist/nulldrive-desktop-0.0.0-ci-1.x86_64.rpm
+          rpm -qpR "$rpm" | grep -qx 'libwebkit2gtk-4.1.so.0()(64bit)' || fail "rpm does not require WebKitGTK 4.1"
+          # Files only: an rpm that claims shared folders conflicts with Fedora's own packages.
+          if rpm -qpl "$rpm" | grep -qxE '/usr(/share(/icons(/hicolor)?|/applications)?|/bin)?'; then fail "rpm claims system folders"; fi
+          dpkg-deb -f dist/nulldrive-desktop_0.0.0-ci_amd64.deb Depends | grep -q libwebkit2gtk-4.1-0 || fail "deb does not depend on WebKitGTK 4.1"
+      - name: Install the .deb
+        run: |
+          sudo apt-get install -y ./dist/nulldrive-desktop_0.0.0-ci_amd64.deb
+          grep -q '^x-scheme-handler/nulldrive=nulldrive-desktop.desktop' /usr/share/applications/mimeinfo.cache ||
+            { echo "::error::nulldrive:// handler not registered by the .deb"; exit 1; }
+      - name: The .tar.gz installs and uninstalls for one user
+        run: |
+          home="$RUNNER_TEMP/tarhome"; mkdir -p "$home"
+          tar -xzf dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
+          HOME="$home" "$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/install.sh"
+          test -x "$home/.local/bin/nulldrive-desktop"
+          desktop-file-validate "$home/.local/share/applications/nulldrive-desktop.desktop"
+          HOME="$home" "$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/install.sh" --uninstall
+          test ! -e "$home/.local/bin/nulldrive-desktop"
+      - name: Build the server
+        run: make build
+      - name: Sync end to end (AppImage, then the installed .deb)
+        run: |
+          xvfb-run -a -s "-screen 0 1280x900x24" dbus-run-session -- \
+            scripts/e2e-linux-desktop.sh dist/NullDrive-0.0.0-ci-x86_64.AppImage bin/nulldrive "$RUNNER_TEMP/linux-desktop.png"
+          xvfb-run -a dbus-run-session -- scripts/e2e-linux-desktop.sh /usr/bin/nulldrive-desktop bin/nulldrive
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: NullDrive-linux
+          path: |
+            dist/*.AppImage
+            dist/*.rpm
+            dist/nulldrive-desktop*
+            ${{ runner.temp }}/linux-desktop.png
+          retention-days: 14
 
   actionlint:
     name: Lint workflows, versions, scripts

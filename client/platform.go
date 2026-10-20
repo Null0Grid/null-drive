@@ -27,7 +27,7 @@ func openPath(p string) error {
 // setStartOnLogin registers/unregisters the app to start (in the tray) at
 // login, using each OS's per-user mechanism. No admin rights needed.
 func setStartOnLogin(enabled bool) error {
-	exe, err := os.Executable()
+	exe, err := selfPath()
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func setStartOnLogin(enabled bool) error {
 		if err != nil {
 			return err
 		}
-		desktop := filepath.Join(cfg, "autostart", "nulldrive.desktop")
+		desktop := filepath.Join(cfg, "autostart", "nulldrive-desktop.desktop")
 		if !enabled {
 			_ = os.Remove(desktop)
 			return nil
@@ -81,4 +81,14 @@ func setStartOnLogin(enabled bool) error {
 		}
 		return os.WriteFile(desktop, []byte(content), 0o644)
 	}
+}
+
+// selfPath is the program to point autostart entries and link handlers at.
+// Inside an AppImage, os.Executable is a temporary mount that changes on
+// every start; the AppImage file itself is in $APPIMAGE.
+func selfPath() (string, error) {
+	if p := os.Getenv("APPIMAGE"); runtime.GOOS == "linux" && p != "" {
+		return p, nil
+	}
+	return os.Executable()
 }

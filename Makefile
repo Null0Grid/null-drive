@@ -11,7 +11,7 @@ UI       := ui
 IMAGE    ?= nulldrive
 PLATFORMS ?= linux/amd64,linux/arm64
 
-.PHONY: help dev dev-api dev-ui run build build-go ui-install ui-build windows msix wine-test icons \
+.PHONY: help dev dev-api dev-ui run build build-go ui-install ui-build windows msix linux-desktop wine-test icons \
         test test-go test-ui test-race e2e screenshots lint fmt smoke e2ee-ref deb docker-offline clean \
         docker docker-multiarch docker-run lint-docker lint-actions \
         client-dev client-build client-test
@@ -91,6 +91,9 @@ windows: ## Windows installer + portable zip + winget manifests in dist/ (cross-
 
 msix: ## Microsoft Store package (MSIX) in dist/, after `make windows` (needs MakeAppx or makemsix)
 	scripts/build-msix.sh
+
+linux-desktop: ## Linux desktop app: AppImage, .rpm, .deb, .tar.gz in dist/ (needs libgtk-3-dev, libwebkit2gtk-4.1-dev)
+	scripts/build-linux-desktop.sh "$$(python3 -c "import json;print(json.load(open('client/wails.json'))['info']['productVersion'])")"
 
 wine-test: ## Installer + nulldrive:// links under Wine, after `make windows` (needs wine, xvfb-run)
 	scripts/wine-test.sh

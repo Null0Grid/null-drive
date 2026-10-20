@@ -240,6 +240,10 @@ def generate() -> list[str]:
     write_ico(ico, [icon("client", s) for s in ICO_SIZES])
     out.append("client/build/windows/icon.ico")
 
+    # Linux packages: hicolor theme sizes (scripts/build-linux-desktop.sh).
+    for s in (32, 48, 64, 128, 256, 512):
+        save(icon("client", s), f"client/build/linux/icons/{s}.png")
+
     # Installer artwork (NSIS: 164x314 welcome/finish panel, 150x57 header).
     save(installer_panel(), "client/build/windows/installer/welcome.bmp")
     save(installer_header(), "client/build/windows/installer/header.bmp")

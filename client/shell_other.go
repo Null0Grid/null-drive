@@ -28,9 +28,3 @@ func shellReveal(p string) error {
 func isPackaged() bool { return false }
 
 func realPath(p string) string { return p }
-
-// registerURLScheme: macOS gets the scheme from the app bundle's
-// Info.plist (CFBundleURLTypes) and delivers links via OnUrlOpen; Linux
-// from the .desktop file (MimeType=x-scheme-handler/nulldrive). See
-// client/build/darwin and client/build/linux.
-func registerURLScheme() error { return nil }

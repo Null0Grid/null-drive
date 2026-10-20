@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Null Drive
+GenericName=File sync
+Comment=Keep a folder in sync with your Null Drive server
+Exec=nulldrive-desktop %u
+Icon=nulldrive-desktop
+Terminal=false
+Categories=Network;FileTransfer;
+Keywords=sync;files;backup;cloud;nullgrid;
+MimeType=x-scheme-handler/nulldrive;
+StartupNotify=false
+StartupWMClass=nulldrive-desktop

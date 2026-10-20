@@ -10,6 +10,7 @@ name: Release
 #   - server archives for Linux, macOS and Windows (amd64 + arm64)
 #   - .deb packages (amd64 + arm64) and Docker image archives (docker load)
 #   - the Windows desktop app: installer, portable zip, winget manifests
+#   - the Linux desktop app (amd64 + arm64): AppImage, .rpm, .deb, .tar.gz
 #   - SHA256SUMS.txt
 # Also pushes the multi-arch image to ghcr.io/<owner>/<repo> (lowercase).
 # The Microsoft Store .msix is a workflow artifact only (store-package): it's
@@ -166,6 +167,8 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.deb
+            dist/*.rpm
+            dist/*.AppImage
             dist/*_docker_*.tar
           if-no-files-found: error
 
@@ -220,6 +223,53 @@ jobs:
             dist/winget/*.yaml
           if-no-files-found: error
 
+  linux-desktop:
+    name: Desktop app (Linux ${{ matrix.arch }})
+    needs: [version, ci, security]
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            go.sum
+            client/go.sum
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/frontend/package-lock.json
+            ui/package-lock.json
+      - name: Install WebKitGTK and GTK
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libgtk-3-dev libwebkit2gtk-4.1-dev
+      - name: AppImage, .rpm, .deb and .tar.gz
+        run: |
+          (cd ui && npm ci --no-audit --no-fund)
+          scripts/build-linux-desktop.sh "$VERSION" dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-desktop-${{ matrix.arch }}
+          path: |
+            dist/*.AppImage
+            dist/*.rpm
+            dist/nulldrive-desktop_*
+          if-no-files-found: error
+
   store:
     name: Microsoft Store package (MSIX)
     needs: [version, desktop]
@@ -264,7 +314,7 @@ jobs:
 
   release:
     name: Attach to the GitHub release
-    needs: [version, image, server, desktop]
+    needs: [version, image, server, desktop, linux-desktop]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -279,6 +329,11 @@ jobs:
         with:
           name: desktop
           path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: linux-desktop-*
+          merge-multiple: true
+          path: dist
       - name: Portable zip name (tags built before 5.0.1 used the old one)
         run: |
           # GitHub release asset names are case-insensitive: the old
@@ -291,7 +346,7 @@ jobs:
           dup=$(find dist -maxdepth 1 -type f -printf '%f\n' | tr '[:upper:]' '[:lower:]' | sort | uniq -d)
           if [ -n "$dup" ]; then echo "::error::asset names that differ only in case: $dup"; exit 1; fi
       - name: Checksums for everything attached
-        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
+        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.rpm *.AppImage *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Image name
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - uses: softprops/action-gh-release@v2
@@ -322,6 +377,8 @@ jobs:
             **Server, anything else:** the `nulldrive_${{ needs.version.outputs.version }}_<os>_<arch>` archive for your system.
 
             **Desktop app (Windows 10/11):** `NullDrive-${{ needs.version.outputs.version }}-Setup.exe` installs for your account, no admin needed; `NullDrive-${{ needs.version.outputs.version }}-portable.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
+
+            **Desktop app (Linux, x86_64 and arm64):** `NullDrive-${{ needs.version.outputs.version }}-x86_64.AppImage` runs on any distro without installing (`chmod +x`, then run it). Or install it: `sudo apt install ./nulldrive-desktop_${{ needs.version.outputs.version }}_amd64.deb` (Debian, Ubuntu, Mint), `sudo dnf install ./nulldrive-desktop-${{ needs.version.outputs.version }}-1.x86_64.rpm` (Fedora, RHEL; `zypper install` on openSUSE), or unpack `nulldrive-desktop_${{ needs.version.outputs.version }}_linux_amd64.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have.
 
             Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/INSTALL.md).
 

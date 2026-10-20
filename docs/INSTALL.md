@@ -168,6 +168,27 @@ Download `NullDrive-<version>-Setup.exe` from the [latest release](https://githu
 - **winget:** once the package is accepted into the winget repository, `winget install NULLGRID.NullDrive`. The manifests are attached to every release (submitting them: [client/README.md](../client/README.md)).
 - **Silent install** (for scripts or deployment tools): `NullDrive-<version>-Setup.exe /S`, uninstall with `"%LOCALAPPDATA%\Programs\Null Drive\Uninstall Null Drive.exe" /S`.
 
+## Desktop app (Linux)
+
+The same tray app, for x86_64 and arm64 (`aarch64`). Every [release](https://github.com/Null0Grid/null-drive/releases/latest) has it in four forms; pick one:
+
+| File | For | How |
+|---|---|---|
+| `NullDrive-<version>-x86_64.AppImage` | any distro, nothing to install | `chmod +x NullDrive-*.AppImage && ./NullDrive-*.AppImage` |
+| `nulldrive-desktop_<version>_amd64.deb` | Debian, Ubuntu, Mint, Pop!_OS | `sudo apt install ./nulldrive-desktop_*_amd64.deb` |
+| `nulldrive-desktop-<version>-1.x86_64.rpm` | Fedora, RHEL/Alma/Rocky 10, openSUSE | `sudo dnf install ./nulldrive-desktop-*.rpm` (openSUSE: `sudo zypper install`) |
+| `nulldrive-desktop_<version>_linux_amd64.tar.gz` | anything else, or no root | unpack, then `./install.sh` (installs to `~/.local` for you only; `./install.sh --uninstall` removes it) |
+
+(`arm64`/`aarch64` in the name for ARM.)
+
+- **Requirements:** WebKitGTK 4.1 and GTK 3, which GNOME, KDE Plasma, Cinnamon, XFCE and MATE desktops already have. The `.deb` and `.rpm` pull them in. For the AppImage or the archive on a minimal system: `sudo apt install libwebkit2gtk-4.1-0` or `sudo dnf install webkit2gtk4.1`. The AppImage doesn't bundle WebKitGTK: the copy your distro ships gets its security updates.
+- **Sign-in:** the device token is kept in the desktop keyring (Secret Service: GNOME Keyring or KWallet), like the Windows app uses Credential Manager. Settings are in `~/.config/Null Drive/`, and the sync folder is `~/NullDrive` by default.
+- **Tray icon:** the app sits in the tray when its window is closed. KDE, Cinnamon, XFCE and MATE show it as is; stock GNOME needs the *AppIndicator and KStatusNotifierItem Support* extension (preinstalled on Ubuntu). Without a tray, start Null Drive again from the app menu to bring its window back.
+- **Links:** the `.deb`, `.rpm` and `install.sh` register `nulldrive://` links (Null Search results). The AppImage registers itself for your account the first time it runs, pointing at wherever the AppImage file is; if you move it, run it once from the new place.
+- **Start on login:** *Settings* in the app (it writes `~/.config/autostart/nulldrive-desktop.desktop`).
+- **Updating:** install the newer package or replace the AppImage. Settings and sync state are kept.
+- **Uninstalling:** `sudo apt remove nulldrive-desktop` / `sudo dnf remove nulldrive-desktop`, or delete the AppImage. Your synced folder is never deleted; settings stay in `~/.config/Null Drive/`.
+
 ## Adding devices
 
 - **Same LAN:** install the desktop app; it lists the server. Pick it, then sign in or pair.
