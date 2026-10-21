@@ -34,7 +34,7 @@ All downloads are on the **[Releases](../../releases)** page.
   Without a registry: `docker load -i nulldrive_<version>_docker_amd64.tar` (or `_arm64`) from the release.
 - **Ubuntu / Debian:** the `.deb` from the release (amd64 or arm64):
   ```
-  sudo apt install ./nulldrive_5.0.0_amd64.deb
+  sudo apt install ./nulldrive_5.0.1_amd64.deb
   ```
   It runs as a `nulldrive` service on port 8080, with data in `/var/lib/nulldrive`.
 - **NAS:** templates for [CasaOS / ZimaOS](deploy/casaos/Apps/NullDrive/docker-compose.yml), [Unraid](deploy/unraid/nulldrive.xml) and [TrueNAS SCALE](deploy/truenas/docker-compose.yaml), or [Docker Compose](deploy/docker-compose.yml).
@@ -69,9 +69,9 @@ make smoke        # curl walkthrough of the whole API
 ```
 
 Packages:
-- **Server archives** for every OS: `scripts/build-release.sh v5.0.0`.
-- **`.deb`:** `scripts/build-deb.sh 5.0.0`, after the server archives.
-- **Docker image:** `docker build .`, or without a registry, `scripts/build-image-offline.sh 5.0.0`.
+- **Server archives** for every OS: `scripts/build-release.sh v5.0.1`.
+- **`.deb`:** `scripts/build-deb.sh 5.0.1`, after the server archives.
+- **Docker image:** `docker build .`, or without a registry, `scripts/build-image-offline.sh 5.0.1`.
 - **Linux desktop app:** `make linux-desktop` (AppImage, `.rpm`, `.deb`, `.tar.gz` for this machine's architecture; needs `libgtk-3-dev libwebkit2gtk-4.1-dev`). `scripts/e2e-linux-desktop.sh` syncs with it against a real server under Xvfb.
 - **Windows desktop app:** `make windows` (installer, portable zip, winget manifests), then `make msix` (Microsoft Store). Both cross-build from Linux: see [client/README.md](client/README.md).
 

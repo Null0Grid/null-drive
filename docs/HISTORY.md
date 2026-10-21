@@ -1,4 +1,4 @@
-# Null Drive: technical history (v5.0.0)
+# Null Drive: technical history (v5.0.1)
 
 The long version of the README: what each part of Null Drive does and how, phase by phase. The front page is [README.md](../README.md); the design reasoning behind each piece is in [DESIGN.md](DESIGN.md); handoff notes are in [handoffs/](handoffs/).
 
@@ -6,7 +6,8 @@ The long version of the README: what each part of Null Drive does and how, phase
 
 | Version | What it added |
 |---|---|
-| **5.0.0** | Null Grid milestone (shared with Null Search and Null Notes, see `null-grid/version-5.0-sync-milestone.md`). Same features as 0.8.3, plus `.deb` packages and offline Docker image archives |
+| **5.0.1** | The desktop app for Linux (x86_64 and arm64): AppImage, `.rpm`, `.deb` and `.tar.gz`, with `nulldrive://` links and the Secret Service keyring; tested end to end in CI ([INSTALL.md](INSTALL.md#desktop-app-linux)). Fixes a rare race in a sync test helper |
+| 5.0.0 | Null Grid milestone (shared with Null Search and Null Notes, see `null-grid/version-5.0-sync-milestone.md`). Same features as 0.8.3, plus `.deb` packages and offline Docker image archives |
 | 0.8.3 | End-to-end encrypted accounts for third-party clients: the published client protocol ([NOTES-E2EE.md](NOTES-E2EE.md)), test vectors, a Python reference client; manifests carry `id` and `mtime` ([handoff](handoffs/phase-8-notes-e2ee.md)) |
 | 0.8.2 | Two-way sync for Null Notes: `If-None-Match: *`, download headers, move tombstones with `moved_to` ([NOTES-SYNC.md](NOTES-SYNC.md), [handoff](handoffs/phase-7-notes-sync.md)) |
 | 0.8.1 | Null Notes backup: `If-Match: *`, device mtimes, `?prefix=`, `synced_id`, 30-day trash ([NOTES-BACKUP.md](NOTES-BACKUP.md), [handoff](handoffs/phase-6-notes-backup.md)) |
