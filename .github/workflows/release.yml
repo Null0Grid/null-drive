@@ -167,8 +167,6 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.deb
-            dist/*.rpm
-            dist/*.AppImage
             dist/*_docker_*.tar
           if-no-files-found: error
 
@@ -349,37 +347,68 @@ jobs:
         run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.rpm *.AppImage *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Image name
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+      - name: Install notes (added once, so a re-run doesn't repeat them)
+        id: notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json body -q .body 2>/dev/null | grep -q '^## Install'; then
+            echo "the release already has install notes"
+            echo "path=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          cat > "$RUNNER_TEMP/notes.md" <<'EOF'
+          ## Install
+
+          **Server, Docker:**
+          ```
+          docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped @IMAGE@:@VERSION@
+          ```
+          No registry? `docker load -i nulldrive_@VERSION@_docker_amd64.tar` (or `_arm64`), then run `nulldrive:@VERSION@`.
+
+          **Server, Ubuntu / Debian:** `sudo apt install ./nulldrive_@VERSION@_amd64.deb` (or `_arm64.deb`). Runs as the `nulldrive` service on port 8080.
+
+          **Server, anything else:** the `nulldrive_@VERSION@_<os>_<arch>` archive for your system.
+
+          **Desktop app (Windows 10/11):** `NullDrive-@VERSION@-Setup.exe` installs for your account, no admin needed; `NullDrive-@VERSION@-portable.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
+
+          **Desktop app (Linux, x86_64 and arm64):** `NullDrive-@VERSION@-x86_64.AppImage` runs on any distro without installing (`chmod +x`, then run it). Or install it: `sudo apt install ./nulldrive-desktop_@VERSION@_amd64.deb` (Debian, Ubuntu, Mint), `sudo dnf install ./nulldrive-desktop-@VERSION@-1.x86_64.rpm` (Fedora, RHEL; `zypper install` on openSUSE), or unpack `nulldrive-desktop_@VERSION@_linux_amd64.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have.
+
+          Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/@REPO@/blob/@TAG@/docs/INSTALL.md).
+
+          **Microsoft Store:** https://apps.microsoft.com/detail/9P3NQGJ8ZZMG (updates itself). The Store package for this version is in this run's `store-package` artifact (upload it in Partner Center).
+          EOF
+          sed -i -e "s|@VERSION@|$VERSION|g" -e "s|@IMAGE@|$IMAGE|g" -e "s|@REPO@|$GITHUB_REPOSITORY|g" -e "s|@TAG@|$TAG|g" "$RUNNER_TEMP/notes.md"
+          echo "path=$RUNNER_TEMP/notes.md" >> "$GITHUB_OUTPUT"
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
           name: Null Drive ${{ needs.version.outputs.version }}
           append_body: true
+          body_path: ${{ steps.notes.outputs.path }}
           fail_on_unmatched_files: true
           files: |
             dist/*.tar.gz
             dist/*.zip
             dist/*.exe
             dist/*.deb
+            dist/*.rpm
+            dist/*.AppImage
             dist/*_docker_*.tar
             dist/SHA256SUMS.txt
             dist/winget/*.yaml
-          body: |
-            ## Install
-
-            **Server, Docker:**
-            ```
-            docker run -d --name nulldrive -p 8080:8080 -v nulldrive-data:/data --restart unless-stopped ${{ env.IMAGE }}:${{ needs.version.outputs.version }}
-            ```
-            No registry? `docker load -i nulldrive_${{ needs.version.outputs.version }}_docker_amd64.tar` (or `_arm64`), then run `nulldrive:${{ needs.version.outputs.version }}`.
-
-            **Server, Ubuntu / Debian:** `sudo apt install ./nulldrive_${{ needs.version.outputs.version }}_amd64.deb` (or `_arm64.deb`). Runs as the `nulldrive` service on port 8080.
-
-            **Server, anything else:** the `nulldrive_${{ needs.version.outputs.version }}_<os>_<arch>` archive for your system.
-
-            **Desktop app (Windows 10/11):** `NullDrive-${{ needs.version.outputs.version }}-Setup.exe` installs for your account, no admin needed; `NullDrive-${{ needs.version.outputs.version }}-portable.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
-
-            **Desktop app (Linux, x86_64 and arm64):** `NullDrive-${{ needs.version.outputs.version }}-x86_64.AppImage` runs on any distro without installing (`chmod +x`, then run it). Or install it: `sudo apt install ./nulldrive-desktop_${{ needs.version.outputs.version }}_amd64.deb` (Debian, Ubuntu, Mint), `sudo dnf install ./nulldrive-desktop-${{ needs.version.outputs.version }}-1.x86_64.rpm` (Fedora, RHEL; `zypper install` on openSUSE), or unpack `nulldrive-desktop_${{ needs.version.outputs.version }}_linux_amd64.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have.
-
-            Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/${{ github.repository }}/blob/${{ env.TAG }}/docs/INSTALL.md).
-
-            **Microsoft Store:** https://apps.microsoft.com/detail/9P3NQGJ8ZZMG (updates itself). The Store package for this version is in this run's `store-package` artifact (upload it in Partner Center).
+      - name: Every file is on the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Everything in SHA256SUMS.txt, the checksums and the winget
+          # manifests must be attached: a file built but left off the upload
+          # list fails here instead of passing silently.
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets -q '.assets[].name' | sort > "$RUNNER_TEMP/attached"
+          { awk '{print $2}' dist/SHA256SUMS.txt; echo SHA256SUMS.txt; (cd dist/winget && ls -- *.yaml); } | sort > "$RUNNER_TEMP/expected"
+          missing=$(comm -23 "$RUNNER_TEMP/expected" "$RUNNER_TEMP/attached")
+          if [ -n "$missing" ]; then
+            while read -r f; do echo "::error::not attached to the release: $f"; done <<< "$missing"
+            exit 1
+          fi
+          echo "all $(wc -l < "$RUNNER_TEMP/expected") files attached"
