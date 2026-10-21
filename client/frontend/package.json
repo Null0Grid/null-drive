@@ -1,7 +1,7 @@
 {
   "name": "@nulldrive/desktop-frontend",
   "private": true,
-  "version": "5.0.1",
+  "version": "5.1.0",
   "type": "module",
   "description": "Null Drive desktop client UI (Wails). Reuses the component library in ../../ui/src/lib.",
   "scripts": {
