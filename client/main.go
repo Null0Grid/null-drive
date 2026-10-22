@@ -74,9 +74,28 @@ func main() {
 		// (onSecondInstance); if no copy is running, this process becomes
 		// the first instance and exits at once without tray or sync.
 	}
+	// Inside Flatpak the single-instance lock is ours (ipc_linux.go): a
+	// plain second launch hands over its arguments here and exits.
+	if inFlatpak() && !hasLink && !quitOnly {
+		if sent, err := sendToRunningCopy(args); sent {
+			if err != nil {
+				log.Fatalf("show the running copy: %v", err)
+			}
+			return
+		}
+	}
 	app := NewApp(version)
 	if hasLink {
 		app.queueLink(rawLink)
+	}
+	var single *options.SingleInstanceLock
+	if inFlatpak() {
+		serveOtherCopies(func(a []string) { app.onSecondInstance(options.SecondInstanceData{Args: a}) })
+	} else {
+		single = &options.SingleInstanceLock{
+			UniqueId:               singleInstanceID,
+			OnSecondInstanceLaunch: app.onSecondInstance,
+		}
 	}
 	hidden := slices.Contains(args, "--hidden") || hasLink
 	startup := app.startup
@@ -95,14 +114,11 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 10, G: 10, B: 15, A: 255},
 		// Closing the window keeps syncing in the tray; Quit is in the tray menu.
-		HideWindowOnClose: true,
-		StartHidden:       hidden || quitOnly,
-		SingleInstanceLock: &options.SingleInstanceLock{
-			UniqueId:               singleInstanceID,
-			OnSecondInstanceLaunch: app.onSecondInstance,
-		},
-		OnStartup:  startup,
-		OnDomReady: app.domReady,
+		HideWindowOnClose:  true,
+		StartHidden:        hidden || quitOnly,
+		SingleInstanceLock: single,
+		OnStartup:          startup,
+		OnDomReady:         app.domReady,
 		OnShutdown: func(ctx context.Context) {
 			if !quitOnly {
 				app.shutdown(ctx)

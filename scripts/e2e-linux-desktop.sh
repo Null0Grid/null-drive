@@ -95,6 +95,21 @@ done
 [[ "$got" == "made on linux" ]] || fail "local file was not uploaded"
 echo "ok   upload"
 
+# Starting it again hands over to the running copy and exits: two copies
+# would be two sync engines on one folder.
+APP_PID=${PIDS[-1]}
+start=$SECONDS
+# (Wails' own lock, outside Flatpak, exits with status 1 after handing over.)
+rc=0
+if [[ "$APP" == flatpak:* ]]; then
+  timeout 30 flatpak run "${APP#flatpak:}" >"$T/second.log" 2>&1 || rc=$?
+else
+  APPIMAGE_EXTRACT_AND_RUN=1 timeout 30 "$APP" >"$T/second.log" 2>&1 || rc=$?
+fi
+[[ $rc -le 1 ]] || fail "a second launch didn't hand over and exit (status $rc)"
+kill -0 "$APP_PID" 2>/dev/null || fail "the first copy stopped when started again"
+echo "ok   a second launch hands over and exits ($((SECONDS - start)) s)"
+
 if [[ "$APP" == *.AppImage ]]; then
   handler=$(xdg-mime query default x-scheme-handler/nulldrive 2>/dev/null || true)
   [[ "$handler" == nulldrive-desktop.desktop ]] || fail "nulldrive:// handler is '$handler'"

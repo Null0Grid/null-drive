@@ -1,4 +1,4 @@
-//go:build !windows
+//go:build !windows && !linux
 
 package main
 
@@ -8,3 +8,5 @@ package main
 func sendToRunningCopy([]string) (bool, error) { return false, nil }
 
 func signalRunningCopy([]string) (bool, error) { return false, nil }
+
+func serveOtherCopies(func([]string)) {}

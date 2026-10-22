@@ -133,3 +133,6 @@ func signalRunningCopy(args []string) (handled bool, err error) {
 	_, err = sendToRunningCopy(args)
 	return true, err
 }
+
+// serveOtherCopies is for Flatpak (ipc_linux.go); Windows uses Wails' lock.
+func serveOtherCopies(func([]string)) {}

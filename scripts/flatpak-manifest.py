@@ -32,14 +32,14 @@ FINISH_ARGS = [
     ("--socket=fallback-x11", "the window, where there's no Wayland"),
     ("--socket=wayland", "the window"),
     ("--device=dri", "GPU rendering in WebKitGTK"),
-    ("--filesystem=home", "the sync folder: ~/NullDrive by default, or any folder you pick"),
+    # Only the default sync folder. Another folder: flatpak override --user
+    # --filesystem=<folder> dev.nullgrid.NullDrive (docs/INSTALL.md).
+    ("--filesystem=~/NullDrive:create", "the sync folder"),
     ("--talk-name=org.freedesktop.secrets", "the device token in your keyring (Secret Service)"),
+    # The tray registers with the watcher under the app's unique bus name;
+    # it needs no well-known name of its own. Single instance doesn't use
+    # D-Bus inside Flatpak (client/ipc_linux.go), so no --own-name at all.
     ("--talk-name=org.kde.StatusNotifierWatcher", "the tray icon"),
-    # The tray library registers org.kde.StatusNotifierItem-<pid>-1, and in
-    # the sandbox's own process namespace the app is always pid 2.
-    ("--own-name=org.kde.StatusNotifierItem-2-1", "the tray icon"),
-    ("--own-name=org.wails_app_io_nulldrive_client.SingleInstance",
-     "starting it again shows the running window instead of a second copy"),
 ]
 
 BUILD_COMMANDS = [
