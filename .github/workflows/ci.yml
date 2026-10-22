@@ -469,7 +469,7 @@ jobs:
           meta="$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/dev.nullgrid.NullDrive.metainfo.xml"
           lint() { # run a check; on failure repeat its findings as annotations
             "$@" > "$RUNNER_TEMP/lint.log" 2>&1 && { cat "$RUNNER_TEMP/lint.log"; return 0; }
-            cat "$RUNNER_TEMP/lint.log"; grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | head -n 9 | sed 's/^/::error::/'; return 1
+            cat "$RUNNER_TEMP/lint.log"; grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | tail -n 9 | sed 's/^/::error::/'; return 1
           }
           lint appstreamcli validate --no-net "$meta"
           lint flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dist/dev.nullgrid.NullDrive.yml
