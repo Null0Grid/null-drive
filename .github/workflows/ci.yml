@@ -430,7 +430,10 @@ jobs:
       - name: The runtime has WebKitGTK 4.1
         run: |
           rv=$(python3 -c "import re;print(re.search(r'RUNTIME_VERSION = .*\"(\d+)\"', open('scripts/flatpak-manifest.py').read()).group(1))")
-          flatpak run --command=sh "org.gnome.Platform//$rv" -c 'ls /usr/lib/*/libwebkit2gtk-4.1.so.0' ||
+          # The runtime's /usr is files/ in the installation.
+          files="$(flatpak info --system --show-location "org.gnome.Platform/x86_64/$rv")/files"
+          for f in "$files"/lib/*/libwebkit*.so.?; do echo "::notice::in the runtime: ${f##*/}"; done
+          ls "$files"/lib/*/libwebkit2gtk-4.1.so.0 ||
             { echo "::error::org.gnome.Platform//$rv has no WebKitGTK 4.1"; exit 1; }
       - name: Flathub linter (manifest + metadata)
         run: |

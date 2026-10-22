@@ -125,10 +125,12 @@ parts:
     source: root
 EOF
 
-if ! (cd "$WORK" && snapcraft pack --destructive-mode --verbosity=verbose --output "$OUT/nulldrive_${VERSION}_${ARCH}.snap"); then
+# snapcraft only writes inside the project folder; the snap is moved after.
+if ! (cd "$WORK" && snapcraft pack --destructive-mode --verbosity=verbose --output "nulldrive_${VERSION}_${ARCH}.snap"); then
   # snapcraft keeps the details in its own log.
   log=$(find "$HOME/.local/state/snapcraft/log" -name '*.log' -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
   [[ -n "$log" ]] && { echo "--- $log" >&2; tail -n 60 "$log" >&2; }
   exit 1
 fi
+mv "$WORK/nulldrive_${VERSION}_${ARCH}.snap" "$OUT/"
 ls -la "$OUT/nulldrive_${VERSION}_${ARCH}.snap"
