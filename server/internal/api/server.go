@@ -59,6 +59,9 @@ type Options struct {
 	// SearchDir holds the per-user search indexes (<user id>.db). Empty
 	// disables search (GET /search answers 503).
 	SearchDir string
+	// SearchSyncWait is how long a search waits for the index to catch up
+	// (0 = search.DefaultSyncWait). Tests make it long.
+	SearchSyncWait time.Duration
 	// SearchOrigins may call GET /search from a browser (CORS), e.g.
 	// "https://search.nullgrid.dev".
 	SearchOrigins []string
@@ -157,6 +160,7 @@ func New(o Options) (*Server, error) {
 
 	if o.SearchDir != "" {
 		s.search = search.New(o.SearchDir, o.Store, s.chunks, o.Logger)
+		s.search.SyncWait = o.SearchSyncWait
 	}
 	s.searchOrigins = map[string]bool{}
 	for _, origin := range o.SearchOrigins {

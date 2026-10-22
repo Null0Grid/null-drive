@@ -155,7 +155,10 @@ func (c *e2eeClient) list(prefix string, since *int64) (int64, map[string]api.Fi
 }
 
 func TestNotesE2EEFlow(t *testing.T) {
-	ts := newTestServerWith(t, nil, func(o *srvapi.Options) { o.SearchDir = filepath.Join(o.DataDir, "indexes") })
+	ts := newTestServerWith(t, nil, func(o *srvapi.Options) {
+		o.SearchDir = filepath.Join(o.DataDir, "indexes")
+		o.SearchSyncWait = testSearchSyncWait
+	})
 	admin := setupAdmin(t, ts)
 	// A plaintext file from before encryption: the account is "migrating"
 	// until the desktop app re-uploads or purges it.

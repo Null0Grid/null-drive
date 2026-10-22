@@ -39,12 +39,19 @@ type searchEnv struct {
 	hasher auth.Hasher
 }
 
+// testSearchSyncWait lets a search wait for the whole index sync. The
+// server's 0.7 s answers "what's indexed so far" when a sync is slow, and
+// under the race detector on a busy CI runner even a first small sync can
+// be: the result was empty and the test failed for no real reason.
+const testSearchSyncWait = 30 * time.Second
+
 func newSearchEnv(t *testing.T) *searchEnv {
 	t.Helper()
 	e := &searchEnv{t: t, ids: map[*client]int64{}}
 	ts := newTestServerWith(t, nil, func(o *srvapi.Options) {
 		e.idx = filepath.Join(o.DataDir, "indexes")
 		o.SearchDir = e.idx
+		o.SearchSyncWait = testSearchSyncWait
 		o.SearchOrigins = []string{testSearchOrigin}
 		e.store, e.hasher = o.Store, o.Hasher
 	})
@@ -461,7 +468,7 @@ func startOn(t *testing.T, dir string) (url string, stop func()) {
 	s, err := srvapi.New(srvapi.Options{
 		Store: meta.New(d, nil), Blobs: blobs, Hasher: auth.Hasher{P: auth.TestParams},
 		Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), DataDir: dir,
-		SearchDir: filepath.Join(dir, "indexes"),
+		SearchDir: filepath.Join(dir, "indexes"), SearchSyncWait: testSearchSyncWait,
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -80,6 +80,10 @@ type Manager struct {
 	mu     sync.Mutex
 	users  map[int64]*userIndex
 	closed bool
+
+	// SyncWait overrides DefaultSyncWait (tests wait for the full sync,
+	// so a slow machine doesn't turn into an empty result).
+	SyncWait time.Duration
 }
 
 type userIndex struct {
@@ -95,6 +99,13 @@ func New(dir string, store *meta.Store, chunks *chunkstore.Store, log *slog.Logg
 		log = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 	return &Manager{dir: dir, store: store, chunks: chunks, log: log, users: map[int64]*userIndex{}}
+}
+
+func (m *Manager) syncWait() time.Duration {
+	if m.SyncWait > 0 {
+		return m.SyncWait
+	}
+	return DefaultSyncWait
 }
 
 func (m *Manager) user(id int64) *userIndex {
@@ -467,13 +478,13 @@ func (m *Manager) loadVaultIDs(ctx context.Context, tx *sql.Tx, root string, f m
 const (
 	DefaultLimit = 20
 	MaxLimit     = 100
-	// syncWait is how long a search waits for the index to catch up
-	// before answering from what's indexed so far.
-	syncWait = 700 * time.Millisecond
+	// DefaultSyncWait is how long a search waits for the index to catch
+	// up before answering from what's indexed so far.
+	DefaultSyncWait = 700 * time.Millisecond
 )
 
 // Search returns userID's matches for q. It first lets the index catch up
-// with recent changes (waiting at most syncWait).
+// with recent changes (waiting at most SyncWait).
 func (m *Manager) Search(ctx context.Context, userID int64, q string, limit int) ([]api.SearchResult, error) {
 	if limit <= 0 {
 		limit = DefaultLimit
@@ -495,7 +506,7 @@ func (m *Manager) Search(ctx context.Context, userID int64, q string, limit int)
 		if err != nil {
 			return nil, err
 		}
-	case <-time.After(syncWait):
+	case <-time.After(m.syncWait()):
 		// Still indexing (a large first build): answer with what's there.
 	case <-ctx.Done():
 		return nil, ctx.Err()
