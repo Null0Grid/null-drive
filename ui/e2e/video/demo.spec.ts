@@ -140,7 +140,7 @@ test('feature demo video', async ({ baseURL }) => {
   await click(page, hist.getByRole('alertdialog', { name: 'Confirm restore' }).getByRole('button', { name: 'Restore' }));
   await caption(page, 'History', 'Restoring adds a new version, so nothing is lost either way.');
   await hold(page, 3000);
-  await page.keyboard.press('Escape');
+  await click(page, hist.getByRole('button', { name: 'Close', exact: true }).last());
 
   // ---- deleted ----
   await click(page, page.getByRole('button', { name: 'Deleted' }).first());
@@ -168,10 +168,16 @@ test('feature demo video', async ({ baseURL }) => {
   await web.getByTestId('file-input').setInputFiles([{ name: 'Boarding pass.pdf', mimeType: 'application/pdf', buffer: SMALL(140_000, 9) }]);
   await until(() => existsSync(join(app.folder, 'Boarding pass.pdf')));
   await caption(page, 'Live', '…and it’s on the computer a moment later.', true);
-  await hold(page, 3500);
+  await hold(page, 2500);
+  await click(page, web.getByRole('button', { name: 'Clear finished uploads' }));
+  await hold(page, 800);
   await caption(page, 'Live', 'Save a file on the computer…', true);
   writeFileSync(join(app.folder, 'Notes from the laptop.md'), '# Ideas\n- rack cable labels\n');
-  await expect(web.getByRole('button', { name: 'Notes from the laptop.md' })).toBeVisible({ timeout: 20_000 });
+  const notes = web.getByRole('button', { name: 'Notes from the laptop.md', exact: true });
+  await expect(notes).toBeVisible({ timeout: 20_000 });
+  await notes.scrollIntoViewIfNeeded();
+  const nb = await notes.boundingBox();
+  if (nb) await page.mouse.move(nb.x + 120, nb.y + nb.height / 2, { steps: 15 });
   await caption(page, 'Live', '…and the web app shows it right away. Only changed parts of big files travel.', true);
   await hold(page, 4000);
 
@@ -185,7 +191,7 @@ test('feature demo video', async ({ baseURL }) => {
   await api.put('Server notes.txt', 'ZimaBoard: 192.168.1.20\nNAS: 192.168.1.10 (browser edit)\n', { 'If-Match': `"${v}"` });
   await hold(page, 2500);
   await caption(page, 'Conflicts', '…then it reconnects. Null Drive never silently overwrites: both versions are kept.', true);
-  app.click(275, 250); // Resume
+  app.click(130, 225); // Resume (the paused card puts it first)
   await until(() => readdirSync(app.folder).some((n) => n.startsWith('Server notes (conflict')), 30_000);
   await hold(page, 1500);
   app.click(220, 347); // Conflicts tab
@@ -199,7 +205,12 @@ test('feature demo video', async ({ baseURL }) => {
   await page.goto('/settings');
   await chapter(page, 'Add devices');
   await caption(page, 'Devices', 'Every computer and app has its own token: see when each was last online, and revoke any.');
-  await expect(page.getByText('Laptop').first()).toBeVisible();
+  // The device's name and its Online badge are one heading: "Laptop Online".
+  const laptop = page.locator('.dev-info strong', { hasText: /^Laptop\s*Online/ });
+  await expect(laptop).toBeVisible();
+  await laptop.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const lb = await laptop.boundingBox();
+  if (lb) await page.mouse.move(lb.x + 40, lb.y + lb.height / 2, { steps: 20 });
   await hold(page, 3500);
   await click(page, page.getByRole('button', { name: 'Add device' }));
   await expect(page.getByTestId('pairing-code')).toBeVisible();

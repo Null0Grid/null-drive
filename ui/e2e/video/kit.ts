@@ -33,10 +33,30 @@ export async function stage(baseURL: string): Promise<{ ctx: BrowserContext; pag
     baseURL,
     acceptDownloads: true,
     args: ['--kiosk', '--window-position=0,0', '--window-size=1280,720', '--force-device-scale-factor=1.25',
-      '--disable-infobars', '--hide-scrollbars', '--no-first-run', '--disable-features=Translate', '--password-store=basic',
-      '--no-proxy-server'],
+      '--disable-infobars', '--hide-scrollbars', '--no-first-run', // Pages served through the route below count as public, so Chrome's
+      // private-network checks would block their own server's scripts.
+      '--disable-features=Translate,BlockInsecurePrivateNetworkRequests,PrivateNetworkAccessSendPreflights,PrivateNetworkAccessRespectPreflightResults,LocalNetworkAccessChecks', '--password-store=basic',
+      '--no-proxy-server',
+      // As if behind HTTPS: encryption needs a secure page (WebCrypto), and
+      // the video's server is plain http://nas.lan.
+      `--unsafely-treat-insecure-origin-as-secure=${new URL(baseURL).origin}`],
   });
   await ctx.addInitScript(overlay);
+  // The server forbids being framed (X-Frame-Options, frame-ancestors), as
+  // it should. Two scenes show the web app in frames on the server's own
+  // origin (beside the desktop app, and in phone frames), so for the
+  // recording only, page loads arrive without those two headers.
+  await ctx.route((u) => u.href.startsWith(baseURL), async (route) => {
+    if (route.request().resourceType() !== 'document') return route.continue();
+    const res = await route.fetch();
+    const headers = { ...res.headers() };
+    delete headers['x-frame-options'];
+    // route.fetch() has already decompressed the body.
+    delete headers['content-encoding'];
+    delete headers['content-length'];
+    if (headers['content-security-policy']) headers['content-security-policy'] = headers['content-security-policy'].replace(/frame-ancestors[^;]*;?\s*/, '');
+    await route.fulfill({ response: res, headers });
+  });
   const page = ctx.pages()[0] ?? (await ctx.newPage());
   return { ctx, page };
 }
@@ -192,8 +212,8 @@ export const card = (body: string) => `<!doctype html><html><head><meta charset=
   .grid div{font-size:16px;line-height:1.7;color:#d7deeb}
   .split{position:fixed;inset:0 0 auto 0;height:656px;display:flex}
   .split iframe{border:0;width:640px;height:656px;background:#0a0a0f}
-  .phone{width:300px;height:620px;border-radius:38px;border:10px solid #1b2130;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.65)}
-  .phone iframe{border:0;width:390px;height:806px;transform:scale(.769);transform-origin:0 0}
+  .phone{width:270px;height:560px;margin-bottom:60px;border-radius:36px;border:10px solid #1b2130;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.65)}
+  .phone iframe{border:0;width:390px;height:809px;transform:scale(.6923);transform-origin:0 0}
 </style></head><body>${body}</body></html>`;
 
 export async function showCard(page: Page, body: string) {

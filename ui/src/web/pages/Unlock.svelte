@@ -3,7 +3,7 @@
   import Button from '../../lib/components/Button.svelte';
   import Input from '../../lib/components/Input.svelte';
   import Icon from '../../lib/components/Icon.svelte';
-  import { WrongKeyError, checkPassphrase, withPassphrase, type Keys } from '../../lib/crypto/keys';
+  import { INSECURE_CONTEXT_MESSAGE, WrongKeyError, checkPassphrase, cryptoAvailable, withPassphrase, type Keys } from '../../lib/crypto/keys';
   import { client } from '../api';
   import { session } from '../session.svelte';
   import { vault } from '../vault.svelte';
@@ -112,8 +112,9 @@
         {:else}
           <Input label="Encryption passphrase" type="password" revealable bind:value={secret} autocomplete="current-password" />
         {/if}
-        {#if error}<p class="error" role="alert"><Icon name="alert" size={16} /> {error}</p>{/if}
-        <Button type="submit" variant="primary" size="lg" full loading={busy} icon="unlock">{busy ? 'Unlocking…' : 'Unlock'}</Button>
+        {#if error}<p class="error" role="alert"><Icon name="alert" size={16} /> {error}</p>
+        {:else if !cryptoAvailable()}<p class="error" role="alert"><Icon name="alert" size={16} /> {INSECURE_CONTEXT_MESSAGE}</p>{/if}
+        <Button type="submit" variant="primary" size="lg" full loading={busy} disabled={!cryptoAvailable()} icon="unlock">{busy ? 'Unlocking…' : 'Unlock'}</Button>
         <div class="links">
           <button type="button" class="link" onclick={() => ((recovery = !recovery), (secret = ''), (error = null))}>
             {recovery ? 'Use my passphrase instead' : 'Forgot it? Use the recovery key'}

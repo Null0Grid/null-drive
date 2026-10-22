@@ -357,6 +357,7 @@ Optional, per account: **Settings → End-to-end encryption → Turn on…** (al
   ```
 - **Each desktop app** asks for the passphrase once and keeps the key in the system keychain; older desktop apps (before 0.7) stop with "update Null Drive" instead of syncing.
 - **The web app** asks again after every reload (the key lives only in that tab's memory). Thumbnails are off for encrypted files.
+- **The web app needs HTTPS for this** (or `localhost`). Browsers only give pages the encryption functions it uses (WebCrypto) over a secure connection, so at `http://192.168.1.20:8080` the web app says so and can't turn encryption on or unlock files. Put HTTPS in front ([below](#https-with-a-reverse-proxy)), or use the desktop app, which works either way.
 - **Backups** of the data directory stay encrypted. Keep the recovery key separately from them. Earlier backups taken before you turned encryption on still contain the plaintext: rotate them out.
 
 What it does and doesn't hide (sizes and folder structure are still visible to the server, among others): [SECURITY.md](SECURITY.md).

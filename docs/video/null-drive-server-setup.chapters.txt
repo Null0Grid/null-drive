@@ -1,0 +1,5 @@
+0:00 Intro
+0:04 Start the server
+0:20 Create the admin account
+0:46 Connect a computer
+1:08 Next steps

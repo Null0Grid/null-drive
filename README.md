@@ -21,6 +21,8 @@ Null Drive keeps a folder on each of your computers in sync through a server you
 |---|---|---|
 | ![Desktop app syncing](docs/screenshots/desktop-activity.png) | ![Version history](docs/screenshots/history-dialog.png) | <img src="docs/screenshots/phone-files.png" alt="Phone layout" width="200"> |
 
+**Videos:** [a 3-minute tour of every feature](docs/video/null-drive-feature-demo.mp4) and [setting up the server in a minute](docs/video/null-drive-server-setup.mp4) (both with chapters; re-record with `scripts/record-video.sh demo|setup`).
+
 ## Install
 
 All downloads are on the **[Releases](../../releases)** page.

@@ -25,8 +25,8 @@ export default defineConfig({
     // Records the getting-started video (scripts/tutorial-video.sh turns it into an MP4).
     { name: 'tutorial', testMatch: /tutorial\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
     // Product videos, filmed on a virtual screen by scripts/record-video.sh.
-    { name: 'video-demo', testMatch: /video\/demo\.spec\.ts/, timeout: 20 * 60_000 },
-    { name: 'video-setup', testMatch: /video\/setup\.spec\.ts/, timeout: 10 * 60_000 },
+    { name: 'video-demo', testMatch: /video\/demo\.spec\.ts/, timeout: 20 * 60_000, use: { actionTimeout: 20_000 } },
+    { name: 'video-setup', testMatch: /video\/setup\.spec\.ts/, timeout: 10 * 60_000, use: { actionTimeout: 20_000 } },
   ],
   webServer: {
     command: `rm -rf .e2e-data && NULLDRIVE_DATA_DIR=.e2e-data NULLDRIVE_PORT=${port} NULLDRIVE_LOG_LEVEL=warn ${bin}`,

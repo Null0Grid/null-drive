@@ -169,3 +169,20 @@ describe('FastCDC port', () => {
     expect(cut(new Uint8Array(DEFAULT_PARAMS.max + 5)) <= DEFAULT_PARAMS.max).toBe(true);
   });
 });
+
+// Over plain http:// to a name or LAN address, browsers have no
+// crypto.subtle: encryption must fail with a message that says why.
+describe('without WebCrypto (not a secure page)', () => {
+  it('explains that HTTPS is needed', async () => {
+    const { INSECURE_CONTEXT_MESSAGE, cryptoAvailable } = await import('../keys');
+    const real = globalThis.crypto;
+    Object.defineProperty(globalThis, 'crypto', { value: { getRandomValues: real.getRandomValues.bind(real) }, configurable: true });
+    try {
+      expect(cryptoAvailable()).toBe(false);
+      await expect(createKeys('twelve monkeys in a row', { alg: 'argon2id', time: 1, memory_kib: 8, threads: 1 })).rejects.toThrow(INSECURE_CONTEXT_MESSAGE);
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', { value: real, configurable: true });
+    }
+    expect(cryptoAvailable()).toBe(true);
+  });
+});

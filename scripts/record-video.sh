@@ -40,10 +40,27 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# The keyring, unlocked, as on a desktop session.
+# The keyring, unlocked, as on a desktop session. Wait for the daemon to own
+# its bus name (otherwise D-Bus may start a second, locked one), make its
+# login keyring the default, and check a secret round-trips before filming.
 (export HOME="$NDV_HOME"; echo -n video | gnome-keyring-daemon --unlock --components=secrets >/dev/null)
-gdbus call --session --dest org.freedesktop.secrets --object-path /org/freedesktop/secrets \
-  --method org.freedesktop.Secret.Service.SetAlias default /org/freedesktop/secrets/collection/login >/dev/null
+dbus() { gdbus call --session --dest "$1" --object-path "$2" --method "$3" "${@:4}"; }
+for _ in $(seq 50); do
+  dbus org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.NameHasOwner org.freedesktop.secrets 2>/dev/null | grep -q true && break
+  sleep 0.1
+done
+ok=""
+for _ in $(seq 25); do
+  if dbus org.freedesktop.secrets /org/freedesktop/secrets org.freedesktop.Secret.Service.SetAlias \
+      default /org/freedesktop/secrets/collection/login >/dev/null 2>&1 &&
+    echo -n ok | timeout 5 secret-tool store --label=probe ndv-probe 1 2>/dev/null &&
+    [[ "$(timeout 5 secret-tool lookup ndv-probe 1 2>/dev/null)" == ok ]]; then
+    ok=1
+    break
+  fi
+  sleep 0.2
+done
+[[ -n "$ok" ]] || { echo "the keyring (gnome-keyring) isn't working; the desktop app needs it" >&2; exit 1; }
 
 # Film the screen (lossless-ish; the final encode is below).
 ffmpeg -v error -y -f x11grab -video_size 1600x900 -framerate 30 -draw_mouse 0 -i "$DISPLAY" \
@@ -58,11 +75,19 @@ if [[ -n "${REUSE:-}" && -f "$RAW" ]]; then
   kill -INT "$FF"; wait "$FF" || true; FF=""
 else
   rm -rf "$RESULTS"
-  (cd ui && npx playwright test --project="$PROJECT")
+  status=0
+  (cd ui && npx playwright test --project="$PROJECT") || status=$?
   kill -INT "$FF"
   wait "$FF" || true
   FF=""
+  mkdir -p "$RESULTS"
   mv "$WORK/raw.mkv" "$RAW"
+  if [[ $status -ne 0 ]]; then
+    # Keep what was filmed: the last frame shows where it stopped.
+    ffmpeg -v error -y -sseof -1 -i "$RAW" -frames:v 1 "$RESULTS/last-frame.png" || true
+    echo "recording failed; footage: $RAW, last frame: $RESULTS/last-frame.png" >&2
+    exit "$status"
+  fi
 fi
 
 # Find each chapter's corner marker (top-left 8×8 px, averaged) at 30 fps.

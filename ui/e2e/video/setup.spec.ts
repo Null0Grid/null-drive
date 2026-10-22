@@ -61,7 +61,8 @@ test('server setup video', async ({ baseURL }) => {
   await caption(page, 'Step 2', 'End-to-end encryption is optional; you can turn it on later in Settings.');
   await hold(page, 3500);
   await click(page, page.getByRole('button', { name: 'Skip for now' }));
-  await hold(page, 2000);
+  await caption(page, 'Step 2', 'The last step links the desktop apps, and can pair a computer right away.');
+  await hold(page, 4000);
   await click(page, page.getByRole('button', { name: 'Open Null Drive' }));
   await expect(page.getByText('Your drive is empty')).toBeVisible();
   await caption(page, 'Step 2', 'Done: the web app works right away, from any browser.');

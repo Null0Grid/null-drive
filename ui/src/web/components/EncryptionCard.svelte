@@ -5,7 +5,7 @@
   import Icon from '../../lib/components/Icon.svelte';
   import Modal from '../../lib/components/Modal.svelte';
   import { toast } from '../../lib/toast.svelte';
-  import { checkPassphrase, withNewRecoveryKey, withPassphrase } from '../../lib/crypto/keys';
+  import { checkPassphrase, cryptoAvailable, INSECURE_CONTEXT_MESSAGE, withNewRecoveryKey, withPassphrase } from '../../lib/crypto/keys';
   import { formatDate } from '../../lib/util/format';
   import { client, drive } from '../api';
   import { session } from '../session.svelte';
@@ -81,8 +81,9 @@
         Off. The server can read your files (as with most self-hosted storage). Turn this on if the server's disk, its
         administrator or a backup of it shouldn't be able to.
       </p>
+      {#if !cryptoAvailable()}<p class="error" role="alert"><Icon name="alert" size={16} /> {INSECURE_CONTEXT_MESSAGE}</p>{/if}
       <div class="row-end">
-        <Button variant="primary" icon="lock" onclick={() => (setupOpen = true)}>Turn on…</Button>
+        <Button variant="primary" icon="lock" disabled={!cryptoAvailable()} onclick={() => (setupOpen = true)}>Turn on…</Button>
       </div>
     </div>
   {:else}
@@ -141,6 +142,17 @@
 </Modal>
 
 <style>
+  .error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-md);
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: var(--text-sm);
+  }
   .stack {
     display: flex;
     flex-direction: column;

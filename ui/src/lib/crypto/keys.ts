@@ -54,7 +54,20 @@ export interface KDFParams {
 /** Same as the Go default: 3 passes over 64 MiB, one lane. */
 export const DEFAULT_KDF: KDFParams = { alg: 'argon2id', time: 3, memory_kib: 64 * 1024, threads: 1 };
 
+/**
+ * Browsers only provide WebCrypto (crypto.subtle) to secure pages: HTTPS,
+ * or localhost. Over plain http:// to a name or LAN address it's missing,
+ * so encryption can't work there at all.
+ */
+export const INSECURE_CONTEXT_MESSAGE =
+  'End-to-end encryption needs a secure connection: open Null Drive over HTTPS (or on localhost). ' +
+  'Over plain http:// the browser doesn’t provide the encryption functions it needs. The desktop app works either way.';
+
+/** True where the browser gives this page WebCrypto. */
+export const cryptoAvailable = () => !!globalThis.crypto?.subtle;
+
 async function hkdf(ikm: Uint8Array, salt: Uint8Array, info: string): Promise<Uint8Array> {
+  if (!cryptoAvailable()) throw new Error(INSECURE_CONTEXT_MESSAGE);
   const key = await crypto.subtle.importKey('raw', ikm as BufferSource, 'HKDF', false, ['deriveBits']);
   const bits = await crypto.subtle.deriveBits(
     { name: 'HKDF', hash: 'SHA-256', salt: salt as BufferSource, info: utf8(info) as BufferSource },
