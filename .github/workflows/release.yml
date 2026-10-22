@@ -382,6 +382,8 @@ jobs:
           merge-multiple: true
           path: dist
       - name: Flathub manifest and AUR packages (they pin this release's archives)
+        env:
+          RELEASE_TAG: ${{ env.TAG }}
         run: |
           (cd dist && sha256sum -- nulldrive-desktop_*_linux_*.tar.gz) > "$RUNNER_TEMP/desktop.sums"
           python3 scripts/flatpak-manifest.py "$VERSION" --sums "$RUNNER_TEMP/desktop.sums" > dist/dev.nullgrid.NullDrive.yml

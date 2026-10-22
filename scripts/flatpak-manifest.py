@@ -117,7 +117,8 @@ def main():
             if name not in sums:
                 sys.exit(f"{name} is not in {a.sums}")
             sources.append({
-                "url": f"{REPO}/releases/download/{version}/{name}",
+                # RELEASE_TAG: the git tag, when it has a "v" (v5.1.1)
+                "url": f"{REPO}/releases/download/{os.environ.get('RELEASE_TAG') or version}/{name}",
                 "sha256": sums[name],
                 "arch": fp_arch,
             })

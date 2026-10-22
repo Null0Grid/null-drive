@@ -101,6 +101,8 @@ def pkgbuild(name, desc, tag, arches, archive, depends, optdepends, extra, local
         f"pkgname={name}",
         f"pkgver={pkgver}",
         f"_tag={tag}",
+        # The release's git tag (5.1.1 or v5.1.1): the download URL's folder.
+        f"_release={os.environ.get('RELEASE_TAG') or tag}",
         "pkgrel=1",
         f"pkgdesc='{desc}'",
         f"arch={arr(arches)}",
@@ -119,7 +121,7 @@ def pkgbuild(name, desc, tag, arches, archive, depends, optdepends, extra, local
         a = ARCHES[fp_arch]
         n, h = archive[fp_arch]
         lines.append(f'source_{fp_arch}=("{name}-${{pkgver}}-{fp_arch}.tar.gz::'
-                     f'{REPO}/releases/download/${{_tag}}/{n.replace(tag, "${_tag}")}")')
+                     f'{REPO}/releases/download/${{_release}}/{n.replace(tag, "${_tag}")}")')
         lines.append(f"sha256sums_{fp_arch}=('{h}')")
     lines += ["", "package() {", "  local a", "  case $CARCH in x86_64) a=amd64 ;; aarch64) a=arm64 ;; esac"]
     lines += package_body
