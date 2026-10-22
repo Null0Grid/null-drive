@@ -441,9 +441,13 @@ jobs:
           python3 scripts/flatpak-manifest.py 0.0.0-ci --local dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz > dist/dev.nullgrid.NullDrive.yml
           tar -xzf dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
           meta="$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/dev.nullgrid.NullDrive.metainfo.xml"
-          appstreamcli validate --no-net "$meta"
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dist/dev.nullgrid.NullDrive.yml
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream "$meta"
+          lint() { # run a check; on failure repeat its findings as annotations
+            "$@" > "$RUNNER_TEMP/lint.log" 2>&1 && { cat "$RUNNER_TEMP/lint.log"; return 0; }
+            cat "$RUNNER_TEMP/lint.log"; grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | head -n 9 | sed 's/^/::error::/'; return 1
+          }
+          lint appstreamcli validate --no-net "$meta"
+          lint flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dist/dev.nullgrid.NullDrive.yml
+          lint flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream "$meta"
       - name: Install the .flatpak
         run: sudo flatpak install --system -y --noninteractive dist/NullDrive-0.0.0-ci-x86_64.flatpak
       - name: Sync end to end in the sandbox

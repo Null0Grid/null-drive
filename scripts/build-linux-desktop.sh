@@ -129,7 +129,11 @@ cp LICENSE "$WORK/$TB/LICENSE"
 # AppStream metadata for Flatpak/Flathub (packaging/flatpak), with this
 # version's release entry (unless it's already listed).
 META=client/build/linux/dev.nullgrid.NullDrive.metainfo.xml
-if grep -q "<release version=\"$VERSION\"" "$META"; then
+# Only a version newer than the latest listed one gets an entry: AppStream
+# wants releases newest first, and test builds (0.0.0-ci) aren't releases.
+LATEST=$(grep -o '<release version="[^"]*"' "$META" | head -1 | cut -d'"' -f2)
+if [[ "$(printf '%s\n%s\n' "$LATEST" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]] ||
+   [[ "$VERSION" == "$LATEST" ]] || [[ "$VERSION" == *-* ]]; then
   grep -v '@CURRENT_RELEASE@' "$META" >"$WORK/$TB/dev.nullgrid.NullDrive.metainfo.xml"
 else
   REL="    <release version=\"$VERSION\" date=\"$(date -u +%F)\"/>"
