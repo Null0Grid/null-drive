@@ -412,8 +412,11 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder xvfb gnome-keyring \
             libsecret-tools xdg-utils appstream
-          # Ubuntu 24.04 limits unprivileged user namespaces, which Flatpak's sandbox needs.
+          # Ubuntu 24.04 confines unprivileged bubblewrap (Flatpak's sandbox)
+          # with AppArmor. A setuid bwrap, which Flatpak supports, needs no
+          # unprivileged user namespaces at all.
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo chmod u+s "$(command -v bwrap)"
           sudo flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           # `flatpak run` keeps per-instance state in $XDG_RUNTIME_DIR, which a
           # runner has no login session to create.
@@ -447,8 +450,10 @@ jobs:
             sed 's/^/::error::/' "$RUNNER_TEMP/fr.log" | head -n 3
             echo "::error::XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-unset}: $(ls -ld "${XDG_RUNTIME_DIR:-/nonexistent}" 2>&1)"
             sudo apt-get install -y -qq strace >/dev/null
-            strace -f -e trace=%file,fcntl,flock flatpak run --command=true org.gnome.Platform//49 2>&1 |
-              grep -E ' = -1 E[A-Z]+' | grep -v ENOENT | sort | uniq -c | sort -rn | head -n 6 | sed 's/^/::error::/'
+            flatpak run -vv --command=true org.gnome.Platform//49 2>&1 | grep -v '^F: *$' | tail -n 4 | sed 's/^/::error::/'
+            strace -f -e trace=clone,clone3,unshare,setns,mount,pivot_root,prctl,capset,write,mkdir,openat \
+              flatpak run --command=true org.gnome.Platform//49 2>&1 |
+              grep -E ' = -1 E[A-Z]+' | grep -vE 'ENOENT|EINVAL' | sed -E 's/0x[0-9a-f]+/0x…/g' | sort | uniq -c | sort -rn | head -n 4 | sed 's/^/::error::/'
             exit 1
           fi
       - name: Flathub linter (manifest + metadata)
