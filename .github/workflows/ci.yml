@@ -415,6 +415,11 @@ jobs:
           # Ubuntu 24.04 limits unprivileged user namespaces, which Flatpak's sandbox needs.
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          # `flatpak run` keeps per-instance state in $XDG_RUNTIME_DIR, which a
+          # runner has no login session to create.
+          rt="/run/user/$(id -u)"
+          sudo install -d -m 700 -o "$(id -u)" -g "$(id -g)" "$rt"
+          echo "XDG_RUNTIME_DIR=$rt" >> "$GITHUB_ENV"
       - name: GNOME runtimes on Flathub (for the manifest's runtime-version)
         run: |
           for v in 52 51 50 49 48; do
