@@ -24,7 +24,7 @@ The repository is [Null0Grid/null-drive](https://github.com/Null0Grid/null-drive
   ```bash
   docker run --rm ghcr.io/null0grid/null-drive:5.1.0 version   # prints v5.1.0 and the commit
   ```
-  The release should have 6 server archives, 2 server `.deb`, 2 Docker archives, the Windows installer and portable zip, 3 winget manifests, the Linux desktop app for x86_64 and arm64 (2 AppImages, 2 `.rpm`, 2 `.deb`, 2 `.tar.gz`) and `SHA256SUMS.txt`.
+  The release should have 6 server archives, 2 server `.deb`, 2 Docker archives, the Windows installer and portable zip, 3 winget manifests, the Linux desktop app for x86_64 and arm64 (2 AppImages, 2 `.rpm`, 2 `.deb`, 2 `.tar.gz`, 2 `.flatpak`), the Flathub manifest `dev.nullgrid.NullDrive.yml`, 2 server snaps, the AUR packages `nulldrive_<v>_aur.tar.gz` and `SHA256SUMS.txt`. The last step of the run fails if any of them didn't get attached. Publishing to Flathub, the Snap Store and the AUR: [PACKAGING.md](PACKAGING.md).
 
 ## If something fails
 

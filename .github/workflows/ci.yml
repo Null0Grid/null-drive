@@ -440,6 +440,8 @@ jobs:
       - name: Sync end to end in the sandbox
         run: |
           tar -xzf dist/nulldrive_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
+          # The test's home must be outside /tmp, which Flatpak keeps private.
+          export E2E_TMP="$RUNNER_TEMP"
           xvfb-run -a -s "-screen 0 1280x900x24" dbus-run-session -- scripts/e2e-linux-desktop.sh \
             flatpak:dev.nullgrid.NullDrive "$RUNNER_TEMP/nulldrive_0.0.0-ci_linux_amd64/nulldrive" "$RUNNER_TEMP/flatpak.png"
       - uses: actions/upload-artifact@v7

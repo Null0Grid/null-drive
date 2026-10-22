@@ -20,7 +20,8 @@ PORT="${E2E_PORT:-18190}"
   { echo "run under xvfb-run and dbus-run-session (see the header)" >&2; exit 2; }
 
 # A short path: gnome-keyring's control socket must fit in 108 bytes.
-T="$(mktemp -d /tmp/nde2e.XXXXXX)"
+# E2E_TMP moves it out of /tmp, which Flatpak never shares with a sandbox.
+T="$(mktemp -d "${E2E_TMP:-/tmp}/nde2e.XXXXXX")"
 export HOME="$T/h" XDG_CONFIG_HOME="$T/h/.config" XDG_DATA_HOME="$T/h/.local/share"
 # Where the app keeps its settings: Flatpak gives each app its own config dir.
 APPCONF="$XDG_CONFIG_HOME/Null Drive"

@@ -67,6 +67,36 @@ Admin commands run as the service user:
 sudo -u nulldrive NULLDRIVE_DATA_DIR=/var/lib/nulldrive nulldrive reset-password admin
 ```
 
+## Snap (the server as a service)
+
+```bash
+sudo snap install --dangerous ./nulldrive_X.Y.Z_amd64.snap   # or _arm64.snap; from the release
+```
+The service (`nulldrive.server`) starts right away on port 8080 and starts with the machine: open `http://<server>:8080` and create the admin account. Data is in `/var/snap/nulldrive/common` and survives upgrades and `snap revert`. `--dangerous` is needed because the file comes from the release, not the Snap Store (see [PACKAGING.md](PACKAGING.md) to publish it there).
+
+```bash
+sudo snap set nulldrive port=8080          # HTTP port; the service restarts to apply it
+sudo snap set nulldrive mdns=off           # don't announce the server on the LAN
+sudo snap set nulldrive trust-proxy=on     # behind a reverse proxy
+sudo snap set nulldrive search-origins=https://search.nullgrid.dev
+sudo snap set nulldrive log-level=debug    # debug | info | warn | error
+sudo snap get nulldrive                    # current settings
+sudo snap logs nulldrive -n 50             # the service log
+sudo nulldrive reset-password admin        # admin commands, with the snap's data
+```
+Upgrading is installing the newer `.snap` the same way. `sudo snap remove nulldrive` keeps a snapshot of the data for 31 days (`snap saved`); `--purge` deletes it.
+
+## Arch Linux (AUR)
+
+`nulldrive-bin` is the server and `nulldrive-desktop-bin` the desktop app. Once they're on the AUR: `yay -S nulldrive-bin` (or `paru`, or `git clone https://aur.archlinux.org/nulldrive-bin.git && cd nulldrive-bin && makepkg -si`). Until then, or for a specific version, the release has both as `nulldrive_X.Y.Z_aur.tar.gz`:
+
+```bash
+tar -xzf nulldrive_X.Y.Z_aur.tar.gz
+cd nulldrive-bin && makepkg -si                  # downloads the release archive, checks its sha256
+sudo systemctl enable --now nulldrive            # then open http://localhost:8080
+```
+The server runs as the `nulldrive` user (created by `systemd-sysusers`) with data in `/var/lib/nulldrive` and settings in `/etc/conf.d/nulldrive` (kept on upgrade). Admin commands: `sudo -u nulldrive NULLDRIVE_DATA_DIR=/var/lib/nulldrive nulldrive help`. Both packages are for x86_64 and aarch64.
+
 ## Docker image from a file (no registry)
 
 Each release also has `nulldrive_X.Y.Z_docker_amd64.tar` / `_arm64.tar`, for machines that can't pull from ghcr.io:
@@ -170,7 +200,7 @@ Download `NullDrive-<version>-Setup.exe` from the [latest release](https://githu
 
 ## Desktop app (Linux)
 
-The same tray app, for x86_64 and arm64 (`aarch64`). Every [release](https://github.com/Null0Grid/null-drive/releases/latest) has it in four forms; pick one:
+The same tray app, for x86_64 and arm64 (`aarch64`). Every [release](https://github.com/Null0Grid/null-drive/releases/latest) has it in five forms; pick one:
 
 | File | For | How |
 |---|---|---|
@@ -178,6 +208,9 @@ The same tray app, for x86_64 and arm64 (`aarch64`). Every [release](https://git
 | `nulldrive-desktop_<version>_amd64.deb` | Debian, Ubuntu, Mint, Pop!_OS | `sudo apt install ./nulldrive-desktop_*_amd64.deb` |
 | `nulldrive-desktop-<version>-1.x86_64.rpm` | Fedora, RHEL/Alma/Rocky 10, openSUSE | `sudo dnf install ./nulldrive-desktop-*.rpm` (openSUSE: `sudo zypper install`) |
 | `nulldrive-desktop_<version>_linux_amd64.tar.gz` | anything else, or no root | unpack, then `./install.sh` (installs to `~/.local` for you only; `./install.sh --uninstall` removes it) |
+| `NullDrive-<version>-x86_64.flatpak` | any distro with Flatpak, sandboxed | `flatpak install ./NullDrive-*.flatpak`, then `flatpak run dev.nullgrid.NullDrive` or the app menu |
+
+Arch Linux: `nulldrive-desktop-bin` ([AUR](#arch-linux-aur)).
 
 (`arm64`/`aarch64` in the name for ARM.)
 
@@ -187,7 +220,8 @@ The same tray app, for x86_64 and arm64 (`aarch64`). Every [release](https://git
 - **Links:** the `.deb`, `.rpm` and `install.sh` register `nulldrive://` links (Null Search results). The AppImage registers itself for your account the first time it runs, pointing at wherever the AppImage file is; if you move it, run it once from the new place.
 - **Start on login:** *Settings* in the app (it writes `~/.config/autostart/nulldrive-desktop.desktop`).
 - **Updating:** install the newer package or replace the AppImage. Settings and sync state are kept.
-- **Uninstalling:** `sudo apt remove nulldrive-desktop` / `sudo dnf remove nulldrive-desktop`, or delete the AppImage. Your synced folder is never deleted; settings stay in `~/.config/Null Drive/`.
+- **Flatpak:** brings its own WebKitGTK (the GNOME runtime, fetched from Flathub on install), so it has no requirements. Its sandbox can reach your home folder (for the sync folder), the network, the keyring and the tray, nothing else; settings are in `~/.var/app/dev.nullgrid.NullDrive/config/Null Drive/`. Start on login goes through the desktop's background-apps permission, which asks once. Updating: install the newer `.flatpak`, or `flatpak update` once it's on Flathub.
+- **Uninstalling:** `sudo apt remove nulldrive-desktop` / `sudo dnf remove nulldrive-desktop` / `flatpak uninstall dev.nullgrid.NullDrive`, or delete the AppImage. Your synced folder is never deleted; settings stay in `~/.config/Null Drive/`.
 
 ## Adding devices
 

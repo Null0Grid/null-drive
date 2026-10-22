@@ -37,6 +37,8 @@ All downloads are on the **[Releases](../../releases)** page.
   sudo apt install ./nulldrive_5.1.0_amd64.deb
   ```
   It runs as a `nulldrive` service on port 8080, with data in `/var/lib/nulldrive`.
+- **Snap** (amd64, arm64): `sudo snap install --dangerous ./nulldrive_5.1.0_amd64.snap` from the release. Runs as a service; `sudo snap set nulldrive port=…`.
+- **Arch Linux:** `nulldrive-bin` (and `nulldrive-desktop-bin`) for the AUR; the `PKGBUILD`s are in each release as `nulldrive_<version>_aur.tar.gz`.
 - **NAS:** templates for [CasaOS / ZimaOS](deploy/casaos/Apps/NullDrive/docker-compose.yml), [Unraid](deploy/unraid/nulldrive.xml) and [TrueNAS SCALE](deploy/truenas/docker-compose.yaml), or [Docker Compose](deploy/docker-compose.yml).
 - **Plain binary** for Linux, macOS and Windows (amd64/arm64), checked with `SHA256SUMS.txt`.
 
@@ -44,7 +46,7 @@ Then open `http://<server>:8080` and create the admin account straight away. HTT
 
 **Desktop app (Windows 10/11):** [Microsoft Store](https://apps.microsoft.com/detail/9P3NQGJ8ZZMG) (updates itself), or `NullDrive-<version>-Setup.exe` from the release, which installs for your account with no admin rights needed. `NullDrive-<version>-portable.zip` is the same app without an installer. Use one of them per PC, not both.
 
-**Desktop app (Linux, x86_64 and arm64):** `NullDrive-<version>-x86_64.AppImage` runs on any distro without installing. Or install `nulldrive-desktop_<version>_amd64.deb` (Debian, Ubuntu), `nulldrive-desktop-<version>-1.x86_64.rpm` (Fedora, openSUSE, RHEL), or unpack the `.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have: [docs/INSTALL.md](docs/INSTALL.md#desktop-app-linux).
+**Desktop app (Linux, x86_64 and arm64):** `NullDrive-<version>-x86_64.AppImage` runs on any distro without installing. Or install `nulldrive-desktop_<version>_amd64.deb` (Debian, Ubuntu), `nulldrive-desktop-<version>-1.x86_64.rpm` (Fedora, openSUSE, RHEL), or unpack the `.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have. Or the sandboxed `NullDrive-<version>-x86_64.flatpak`, which brings its own: [docs/INSTALL.md](docs/INSTALL.md#desktop-app-linux). Flathub, Snap Store and AUR publishing: [docs/PACKAGING.md](docs/PACKAGING.md).
 
 ## Null Grid: how it connects
 
@@ -73,6 +75,7 @@ Packages:
 - **`.deb`:** `scripts/build-deb.sh 5.1.0`, after the server archives.
 - **Docker image:** `docker build .`, or without a registry, `scripts/build-image-offline.sh 5.1.0`.
 - **Linux desktop app:** `make linux-desktop` (AppImage, `.rpm`, `.deb`, `.tar.gz` for this machine's architecture; needs `libgtk-3-dev libwebkit2gtk-4.1-dev`). `scripts/e2e-linux-desktop.sh` syncs with it against a real server under Xvfb.
+- **Flatpak, snap, AUR:** `scripts/build-flatpak.sh 5.1.0` (after the Linux desktop app), `scripts/build-snap.sh 5.1.0` (after the server archives; needs snapcraft), `scripts/build-aur.sh 5.1.0 dist --test` (needs both; runs makepkg in an Arch container).
 - **Windows desktop app:** `make windows` (installer, portable zip, winget manifests), then `make msix` (Microsoft Store). Both cross-build from Linux: see [client/README.md](client/README.md).
 
 Pushing a tag like `5.1.0` or `v5.1.0` runs [the release workflow](.github/workflows/release.yml), which tests and builds all of these and attaches them to the GitHub release. For a tag that already exists: Actions → Release → Run workflow.
