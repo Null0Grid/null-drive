@@ -480,7 +480,11 @@ jobs:
               grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | tail -n 3 | sed 's/^/::warning::linter crashed: /'
               return 0
             fi
-            grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | tail -n 9 | sed 's/^/::error::/'; return 1
+            # flatpak-builder-lint prints JSON: one annotation per error.
+            python3 -c 'import json,sys; [print("::error::" + e) for e in json.load(open(sys.argv[1])).get("errors", [])]' \
+              "$RUNNER_TEMP/lint.log" 2>/dev/null ||
+              grep -v '^\s*$' "$RUNNER_TEMP/lint.log" | tail -n 9 | sed 's/^/::error::/'
+            return 1
           }
           lint appstreamcli validate --no-net "$meta"
           lint flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dist/dev.nullgrid.NullDrive.yml

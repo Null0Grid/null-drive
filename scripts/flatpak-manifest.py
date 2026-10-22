@@ -35,7 +35,9 @@ FINISH_ARGS = [
     ("--filesystem=home", "the sync folder: ~/NullDrive by default, or any folder you pick"),
     ("--talk-name=org.freedesktop.secrets", "the device token in your keyring (Secret Service)"),
     ("--talk-name=org.kde.StatusNotifierWatcher", "the tray icon"),
-    ("--own-name=org.kde.*", "the tray icon (org.kde.StatusNotifierItem-<pid>-1)"),
+    # The tray library registers org.kde.StatusNotifierItem-<pid>-1, and in
+    # the sandbox's own process namespace the app is always pid 2.
+    ("--own-name=org.kde.StatusNotifierItem-2-1", "the tray icon"),
     ("--own-name=org.wails_app_io_nulldrive_client.SingleInstance",
      "starting it again shows the running window instead of a second copy"),
 ]
