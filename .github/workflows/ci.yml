@@ -440,6 +440,17 @@ jobs:
           for f in "$files"/lib/*/libwebkit*.so.?; do echo "::notice::in the runtime: ${f##*/}"; done
           ls "$files"/lib/*/libwebkit2gtk-4.1.so.0 ||
             { echo "::error::org.gnome.Platform//$rv has no WebKitGTK 4.1"; exit 1; }
+      - name: flatpak run works here
+        run: |
+          # Repeats the failing system calls as annotations if it doesn't.
+          if ! flatpak run --command=true org.gnome.Platform//49 2> "$RUNNER_TEMP/fr.log"; then
+            sed 's/^/::error::/' "$RUNNER_TEMP/fr.log" | head -n 3
+            echo "::error::XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-unset}: $(ls -ld "${XDG_RUNTIME_DIR:-/nonexistent}" 2>&1)"
+            sudo apt-get install -y -qq strace >/dev/null
+            strace -f -e trace=%file,fcntl,flock flatpak run --command=true org.gnome.Platform//49 2>&1 |
+              grep -E ' = -1 E[A-Z]+' | grep -v ENOENT | sort | uniq -c | sort -rn | head -n 6 | sed 's/^/::error::/'
+            exit 1
+          fi
       - name: Flathub linter (manifest + metadata)
         run: |
           sudo flatpak install --system -y --noninteractive flathub org.flatpak.Builder
