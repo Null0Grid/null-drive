@@ -66,6 +66,9 @@ func setStartOnLogin(enabled bool) error {
 		}
 		return os.WriteFile(plist, []byte(content), 0o644)
 	default:
+		if inFlatpak() {
+			return flatpakAutostart(enabled)
+		}
 		cfg, err := os.UserConfigDir()
 		if err != nil {
 			return err
@@ -91,4 +94,36 @@ func selfPath() (string, error) {
 		return p, nil
 	}
 	return os.Executable()
+}
+
+// inFlatpak reports whether the app runs in a Flatpak sandbox.
+func inFlatpak() bool {
+	return runtime.GOOS == "linux" && os.Getenv("FLATPAK_ID") != ""
+}
+
+// flatpakAutostart turns start-on-login on or off through the Background
+// portal. A sandboxed app can't write ~/.config/autostart (and an entry
+// there would point at a path inside the sandbox); the portal asks the user
+// once and writes an entry that runs the app with `flatpak run`.
+// gdbus is in the GNOME runtime, so this needs no D-Bus library.
+func flatpakAutostart(enabled bool) error {
+	cmd := exec.Command("gdbus", flatpakAutostartArgs(enabled)...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("background portal: %w: %s", err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
+func flatpakAutostartArgs(enabled bool) []string {
+	return []string{
+		"call", "--session",
+		"--dest", "org.freedesktop.portal.Desktop",
+		"--object-path", "/org/freedesktop/portal/desktop",
+		"--method", "org.freedesktop.portal.Background.RequestBackground",
+		"", // no parent window
+		fmt.Sprintf("{'reason': <'Keep your Null Drive folder in sync after you sign in'>, "+
+			"'autostart': <%t>, 'commandline': <['nulldrive-desktop', '--hidden']>, "+
+			"'dbus-activatable': <false>}", enabled),
+	}
 }

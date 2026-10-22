@@ -26,6 +26,9 @@ const desktopID = "nulldrive-desktop.desktop"
 // which also puts Null Drive in the app menu. Like the portable Windows
 // copy, it leaves the scheme alone when another installed copy owns it.
 func registerURLScheme() error {
+	if inFlatpak() {
+		return nil // Flatpak exports the app's .desktop file, MimeType included
+	}
 	exe, err := selfPath()
 	if err != nil {
 		return err

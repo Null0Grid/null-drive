@@ -6,11 +6,13 @@
 #
 #   xvfb-run -a dbus-run-session -- scripts/e2e-linux-desktop.sh APP SERVER [screenshot.png]
 #
-# APP is an AppImage or an installed nulldrive-desktop; SERVER is bin/nulldrive.
+# APP is an AppImage, an installed nulldrive-desktop, or flatpak:<app-id> for
+# an installed Flatpak; SERVER is bin/nulldrive.
 # Needs gnome-keyring, libsecret-tools (secret-tool), curl, python3.
 set -euo pipefail
 
-APP="$(realpath "${1:?usage: e2e-linux-desktop.sh APP SERVER [screenshot]}")"
+APP="${1:?usage: e2e-linux-desktop.sh APP SERVER [screenshot]}"
+[[ "$APP" == flatpak:* ]] || APP="$(realpath "$APP")"
 SERVER="$(realpath "${2:?usage: e2e-linux-desktop.sh APP SERVER [screenshot]}")"
 SHOT="${3:-}"
 PORT="${E2E_PORT:-18190}"
@@ -20,6 +22,9 @@ PORT="${E2E_PORT:-18190}"
 # A short path: gnome-keyring's control socket must fit in 108 bytes.
 T="$(mktemp -d /tmp/nde2e.XXXXXX)"
 export HOME="$T/h" XDG_CONFIG_HOME="$T/h/.config" XDG_DATA_HOME="$T/h/.local/share"
+# Where the app keeps its settings: Flatpak gives each app its own config dir.
+APPCONF="$XDG_CONFIG_HOME/Null Drive"
+[[ "$APP" == flatpak:* ]] && APPCONF="$HOME/.var/app/${APP#flatpak:}/config/Null Drive"
 mkdir -p "$HOME" "$T/data"
 PIDS=()
 cleanup() {
@@ -33,7 +38,7 @@ cleanup() {
 trap cleanup EXIT
 fail() {
   echo "::error::linux desktop e2e: $*"
-  for f in "$XDG_CONFIG_HOME/Null Drive/logs/client.log" "$T/app.log"; do
+  for f in "$APPCONF/logs/client.log" "$T/app.log"; do
     [[ -f "$f" ]] && tail -n 15 "$f" | sed 's/^/  | /'
   done
   exit 1
@@ -62,15 +67,19 @@ curl -fsS -X PUT "$B/files/From%20server.txt" -H "Authorization: Bearer $SES" -H
 # What the setup screens save: the config file, and the token in the keyring
 # under the same service/account go-keyring uses.
 SYNC="$HOME/NullDrive"
-mkdir -p "$XDG_CONFIG_HOME/Null Drive" "$SYNC"
-cat >"$XDG_CONFIG_HOME/Null Drive/config.json" <<EOF
+mkdir -p "$APPCONF" "$SYNC"
+cat >"$APPCONF/config.json" <<EOF
 {"server_url":"http://127.0.0.1:$PORT","username":"admin","device_name":"linux-e2e","device_id":$DID,"folder":"$SYNC","poll_seconds":2}
 EOF
 echo -n "$TOK" | timeout 10 secret-tool store --label="Null Drive" service "Null Drive" \
   username "http://127.0.0.1:$PORT|linux-e2e" || fail "secret-tool store"
 
 # The app (an AppImage runs without FUSE this way).
-APPIMAGE_EXTRACT_AND_RUN=1 setsid "$APP" >"$T/app.log" 2>&1 &
+if [[ "$APP" == flatpak:* ]]; then
+  setsid flatpak run "${APP#flatpak:}" >"$T/app.log" 2>&1 &
+else
+  APPIMAGE_EXTRACT_AND_RUN=1 setsid "$APP" >"$T/app.log" 2>&1 &
+fi
 PIDS+=($!)
 
 for _ in $(seq 60); do [[ -f "$SYNC/From server.txt" ]] && break; sleep 0.5; done

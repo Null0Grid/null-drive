@@ -10,7 +10,11 @@ name: Release
 #   - server archives for Linux, macOS and Windows (amd64 + arm64)
 #   - .deb packages (amd64 + arm64) and Docker image archives (docker load)
 #   - the Windows desktop app: installer, portable zip, winget manifests
-#   - the Linux desktop app (amd64 + arm64): AppImage, .rpm, .deb, .tar.gz
+#   - the Linux desktop app (amd64 + arm64): AppImage, .rpm, .deb, .tar.gz,
+#     .flatpak, and the Flathub manifest (dev.nullgrid.NullDrive.yml)
+#   - the server as a snap (amd64 + arm64)
+#   - AUR packages: PKGBUILD + .SRCINFO for nulldrive-bin and
+#     nulldrive-desktop-bin (nulldrive_<v>_aur.tar.gz)
 #   - SHA256SUMS.txt
 # Also pushes the multi-arch image to ghcr.io/<owner>/<repo> (lowercase).
 # The Microsoft Store .msix is a workflow artifact only (store-package): it's
@@ -259,13 +263,50 @@ jobs:
         run: |
           (cd ui && npm ci --no-audit --no-fund)
           scripts/build-linux-desktop.sh "$VERSION" dist
+      - name: .flatpak
+        run: |
+          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo FLATPAK_SCOPE=system scripts/build-flatpak.sh "$VERSION" dist
       - uses: actions/upload-artifact@v7
         with:
           name: linux-desktop-${{ matrix.arch }}
           path: |
             dist/*.AppImage
             dist/*.rpm
+            dist/*.flatpak
             dist/nulldrive-desktop_*
+          if-no-files-found: error
+
+  snap:
+    name: Server snap (${{ matrix.arch }})
+    needs: [version, server]
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: server
+          path: dist
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
+      - name: .snap
+        run: sudo scripts/build-snap.sh "$VERSION" dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: snap-${{ matrix.arch }}
+          path: dist/*.snap
           if-no-files-found: error
 
   store:
@@ -312,13 +353,16 @@ jobs:
 
   release:
     name: Attach to the GitHub release
-    needs: [version, image, server, desktop, linux-desktop]
+    needs: [version, image, server, desktop, linux-desktop, snap]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     env:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/download-artifact@v8
         with:
           name: server
@@ -332,6 +376,17 @@ jobs:
           pattern: linux-desktop-*
           merge-multiple: true
           path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: snap-*
+          merge-multiple: true
+          path: dist
+      - name: Flathub manifest and AUR packages (they pin this release's archives)
+        run: |
+          (cd dist && sha256sum -- nulldrive-desktop_*_linux_*.tar.gz) > "$RUNNER_TEMP/desktop.sums"
+          python3 scripts/flatpak-manifest.py "$VERSION" --sums "$RUNNER_TEMP/desktop.sums" > dist/dev.nullgrid.NullDrive.yml
+          scripts/build-aur.sh "$VERSION" dist
+          rm -rf dist/aur
       - name: Portable zip name (tags built before 5.0.1 used the old one)
         run: |
           # GitHub release asset names are case-insensitive: the old
@@ -344,7 +399,7 @@ jobs:
           dup=$(find dist -maxdepth 1 -type f -printf '%f\n' | tr '[:upper:]' '[:lower:]' | sort | uniq -d)
           if [ -n "$dup" ]; then echo "::error::asset names that differ only in case: $dup"; exit 1; fi
       - name: Checksums for everything attached
-        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.rpm *.AppImage *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
+        run: cd dist && sha256sum -- *.tar.gz *.zip *.exe *.deb *.rpm *.AppImage *.flatpak *.snap *.yml *.tar > SHA256SUMS.txt && cat SHA256SUMS.txt
       - name: Image name
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - name: Install notes (added once, so a re-run doesn't repeat them)
@@ -368,11 +423,15 @@ jobs:
 
           **Server, Ubuntu / Debian:** `sudo apt install ./nulldrive_@VERSION@_amd64.deb` (or `_arm64.deb`). Runs as the `nulldrive` service on port 8080.
 
+          **Server, snap** (Ubuntu and any distro with snapd): `sudo snap install --dangerous ./nulldrive_@VERSION@_amd64.snap` (or `_arm64`). Runs as a service on port 8080; `sudo snap set nulldrive port=…` to change it.
+
+          **Arch Linux:** unpack `nulldrive_@VERSION@_aur.tar.gz` and run `makepkg -si` in `nulldrive-bin/` (server, a systemd service) or `nulldrive-desktop-bin/` (desktop app). Same packages as on the AUR.
+
           **Server, anything else:** the `nulldrive_@VERSION@_<os>_<arch>` archive for your system.
 
           **Desktop app (Windows 10/11):** `NullDrive-@VERSION@-Setup.exe` installs for your account, no admin needed; `NullDrive-@VERSION@-portable.zip` is the same app without an installer. If the build isn't code-signed, SmartScreen asks first: *More info → Run anyway*.
 
-          **Desktop app (Linux, x86_64 and arm64):** `NullDrive-@VERSION@-x86_64.AppImage` runs on any distro without installing (`chmod +x`, then run it). Or install it: `sudo apt install ./nulldrive-desktop_@VERSION@_amd64.deb` (Debian, Ubuntu, Mint), `sudo dnf install ./nulldrive-desktop-@VERSION@-1.x86_64.rpm` (Fedora, RHEL; `zypper install` on openSUSE), or unpack `nulldrive-desktop_@VERSION@_linux_amd64.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have.
+          **Desktop app (Linux, x86_64 and arm64):** `NullDrive-@VERSION@-x86_64.AppImage` runs on any distro without installing (`chmod +x`, then run it). Or install it: `sudo apt install ./nulldrive-desktop_@VERSION@_amd64.deb` (Debian, Ubuntu, Mint), `sudo dnf install ./nulldrive-desktop-@VERSION@-1.x86_64.rpm` (Fedora, RHEL; `zypper install` on openSUSE), or unpack `nulldrive-desktop_@VERSION@_linux_amd64.tar.gz` and run `./install.sh`. Needs WebKitGTK 4.1, which most desktops already have. Or the sandboxed Flatpak, which brings its own: `flatpak install ./NullDrive-@VERSION@-x86_64.flatpak`.
 
           Then open `http://<server>:8080` and create the admin account. Verify downloads with `SHA256SUMS.txt`. Full guide: [docs/INSTALL.md](https://github.com/@REPO@/blob/@TAG@/docs/INSTALL.md).
 
@@ -394,6 +453,9 @@ jobs:
             dist/*.deb
             dist/*.rpm
             dist/*.AppImage
+            dist/*.flatpak
+            dist/*.snap
+            dist/dev.nullgrid.NullDrive.yml
             dist/*_docker_*.tar
             dist/SHA256SUMS.txt
             dist/winget/*.yaml

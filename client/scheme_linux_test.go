@@ -61,3 +61,48 @@ func TestRegisterURLSchemeForAppImage(t *testing.T) {
 		t.Fatalf("a package install must not register itself: %s", b)
 	}
 }
+
+// Inside Flatpak the exported .desktop file owns the scheme, and autostart
+// goes through the Background portal.
+func TestFlatpak(t *testing.T) {
+	bin := t.TempDir()
+	log := filepath.Join(bin, "calls")
+	fake := "#!/bin/sh\nfor a in \"$@\"; do echo \"$a\"; done >> " + log + "\n"
+	for _, n := range []string{"xdg-mime", "update-desktop-database", "gdbus"} {
+		if err := os.WriteFile(filepath.Join(bin, n), []byte(fake), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
+	t.Setenv("XDG_DATA_HOME", t.TempDir())
+	t.Setenv("FLATPAK_ID", "dev.nullgrid.NullDrive")
+	if err := registerURLScheme(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(log); err == nil {
+		t.Fatal("registered the scheme inside Flatpak")
+	}
+	if err := setStartOnLogin(true); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := os.ReadFile(log)
+	for _, want := range []string{
+		"org.freedesktop.portal.Background.RequestBackground",
+		"'autostart': <true>",
+		"'commandline': <['nulldrive-desktop', '--hidden']>",
+	} {
+		if !strings.Contains(string(got), want) {
+			t.Fatalf("portal call misses %q:\n%s", want, got)
+		}
+	}
+	if err := os.Remove(log); err != nil {
+		t.Fatal(err)
+	}
+	if err := setStartOnLogin(false); err != nil {
+		t.Fatal(err)
+	}
+	got, _ = os.ReadFile(log)
+	if !strings.Contains(string(got), "'autostart': <false>") {
+		t.Fatalf("turning it off doesn't ask the portal:\n%s", got)
+	}
+}

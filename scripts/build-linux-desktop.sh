@@ -126,6 +126,15 @@ cp "$BIN" "$WORK/$TB/nulldrive-desktop"
 cp client/build/linux/nulldrive-desktop.desktop "$WORK/$TB/"
 cp client/build/linux/icons/512.png "$WORK/$TB/nulldrive-desktop.png"
 cp LICENSE "$WORK/$TB/LICENSE"
+# AppStream metadata for Flatpak/Flathub (packaging/flatpak), with this
+# version's release entry (unless it's already listed).
+META=client/build/linux/dev.nullgrid.NullDrive.metainfo.xml
+if grep -q "<release version=\"$VERSION\"" "$META"; then
+  grep -v '@CURRENT_RELEASE@' "$META" >"$WORK/$TB/dev.nullgrid.NullDrive.metainfo.xml"
+else
+  REL="    <release version=\"$VERSION\" date=\"$(date -u +%F)\"/>"
+  sed "s|^ *<!-- @CURRENT_RELEASE@ -->|$REL|" "$META" >"$WORK/$TB/dev.nullgrid.NullDrive.metainfo.xml"
+fi
 cat >"$WORK/$TB/install.sh" <<'EOF'
 #!/bin/sh
 # Installs Null Drive for this user only (no root): ~/.local/bin, the app

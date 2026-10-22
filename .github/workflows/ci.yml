@@ -306,6 +306,11 @@ jobs:
           for _ in $(seq 30); do curl -fsS http://127.0.0.1:18080/api/v1/health && break; sleep 1; done
           curl -fsS http://127.0.0.1:18080/api/v1/health | grep -q '"version":"v0.0.0-ci"'
           docker exec nd /nulldrive version | grep -q v0.0.0-ci
+      - uses: actions/upload-artifact@v7
+        with:
+          name: server-linux
+          path: dist/nulldrive_0.0.0-ci_linux_*.tar.gz
+          retention-days: 3
 
   linux-desktop:
     name: Desktop app (Linux) — build, packages, sync e2e
@@ -381,6 +386,134 @@ jobs:
             dist/*.rpm
             dist/nulldrive-desktop*
             ${{ runner.temp }}/linux-desktop.png
+          retention-days: 14
+
+  flatpak:
+    name: Flatpak (desktop app) — build, lint, install, sync e2e
+    runs-on: ubuntu-24.04
+    needs: [linux-desktop, packages]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: NullDrive-linux
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: server-linux
+          path: dist
+      - name: Install Flatpak and test tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder xvfb gnome-keyring \
+            libsecret-tools xdg-utils appstream
+          # Ubuntu 24.04 limits unprivileged user namespaces, which Flatpak's sandbox needs.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      - name: GNOME runtimes on Flathub (for the manifest's runtime-version)
+        run: |
+          for v in 52 51 50 49 48; do
+            if flatpak remote-info --system flathub "runtime/org.gnome.Platform/x86_64/$v" >/dev/null 2>&1; then
+              echo "org.gnome.Platform//$v: available"
+            fi
+          done
+      - name: Build the .flatpak
+        run: sudo FLATPAK_SCOPE=system scripts/build-flatpak.sh 0.0.0-ci dist
+      - name: The runtime has WebKitGTK 4.1
+        run: |
+          rv=$(python3 -c "import re;print(re.search(r'RUNTIME_VERSION = .*\"(\d+)\"', open('scripts/flatpak-manifest.py').read()).group(1))")
+          flatpak run --command=sh "org.gnome.Platform//$rv" -c 'ls /usr/lib/*/libwebkit2gtk-4.1.so.0' ||
+            { echo "::error::org.gnome.Platform//$rv has no WebKitGTK 4.1"; exit 1; }
+      - name: Flathub linter (manifest + metadata)
+        run: |
+          sudo flatpak install --system -y --noninteractive flathub org.flatpak.Builder
+          python3 scripts/flatpak-manifest.py 0.0.0-ci --local dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz > dev.nullgrid.NullDrive.yml
+          tar -xzf dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
+          meta="$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/dev.nullgrid.NullDrive.metainfo.xml"
+          appstreamcli validate --no-net "$meta"
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dev.nullgrid.NullDrive.yml
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream "$meta"
+      - name: Install the .flatpak
+        run: sudo flatpak install --system -y --noninteractive dist/NullDrive-0.0.0-ci-x86_64.flatpak
+      - name: Sync end to end in the sandbox
+        run: |
+          tar -xzf dist/nulldrive_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
+          xvfb-run -a -s "-screen 0 1280x900x24" dbus-run-session -- scripts/e2e-linux-desktop.sh \
+            flatpak:dev.nullgrid.NullDrive "$RUNNER_TEMP/nulldrive_0.0.0-ci_linux_amd64/nulldrive" "$RUNNER_TEMP/flatpak.png"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: NullDrive-flatpak
+          path: |
+            dist/*.flatpak
+            dev.nullgrid.NullDrive.yml
+            ${{ runner.temp }}/flatpak.png
+          retention-days: 14
+
+  snap:
+    name: Snap (server) — build, install, service, settings
+    runs-on: ubuntu-24.04
+    needs: packages
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: server-linux
+          path: dist
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
+      - name: Build the .snap
+        run: sudo scripts/build-snap.sh 0.0.0-ci dist
+      - name: Install it; the service starts and takes its settings
+        run: |
+          fail() { echo "::error::snap: $*"; sudo snap logs nulldrive -n 40 | sed 's/^/::error::log: /'; exit 1; }
+          health() { for _ in $(seq 40); do curl -fsS "http://127.0.0.1:$1/api/v1/health" >/dev/null 2>&1 && return 0; sleep 0.5; done; return 1; }
+          sudo snap install --dangerous dist/nulldrive_0.0.0-ci_amd64.snap || fail "install failed"
+          health 8080 || fail "no healthy server on :8080 after install"
+          curl -fsS http://127.0.0.1:8080/api/v1/health | grep -q '"version":"v0.0.0-ci"' || fail "wrong version"
+          snap services nulldrive | grep -q 'nulldrive.server .*enabled .*active' || fail "service not enabled and active"
+          sudo test -f /var/snap/nulldrive/common/nulldrive.db || fail "no database in /var/snap/nulldrive/common"
+          sudo snap set nulldrive port=18081 || fail "snap set port failed"
+          health 18081 || fail "port setting not applied"
+          if curl -fsS http://127.0.0.1:8080/api/v1/health >/dev/null 2>&1; then fail "still listening on :8080"; fi
+          if sudo snap set nulldrive port=http 2>/dev/null; then fail "accepted port=http"; fi
+          if sudo snap set nulldrive mdns=maybe 2>/dev/null; then fail "accepted mdns=maybe"; fi
+          sudo nulldrive version | grep -q v0.0.0-ci || fail "the nulldrive command doesn't run"
+          sudo nulldrive healthcheck || fail "nulldrive healthcheck (uses the port setting) failed"
+          if sudo snap logs nulldrive -n 200 | grep -E '"level":"ERROR"|apparmor="DENIED"'; then fail "errors in the service log"; fi
+          sudo snap remove --purge nulldrive || fail "remove failed"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: NullDrive-snap
+          path: dist/*.snap
+          retention-days: 14
+
+  aur:
+    name: AUR packages — makepkg, install, run (Arch container)
+    runs-on: ubuntu-24.04
+    needs: [linux-desktop, packages]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: NullDrive-linux
+          path: dist
+      - uses: actions/download-artifact@v8
+        with:
+          name: server-linux
+          path: dist
+      - name: PKGBUILD + .SRCINFO, built and installed with pacman
+        run: scripts/build-aur.sh 0.0.0-ci dist --test
+      - uses: actions/upload-artifact@v7
+        with:
+          name: NullDrive-aur
+          path: dist/nulldrive_0.0.0-ci_aur.tar.gz
           retention-days: 14
 
   actionlint:

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata for the Flatpak / Flathub build (and GNOME Software,
+     KDE Discover). scripts/build-linux-desktop.sh puts it in the .tar.gz with
+     the current version's <release> filled in; the Flathub manifest installs
+     it from there. Validate: appstreamcli validate - -->
+<component type="desktop-application">
+  <id>dev.nullgrid.NullDrive</id>
+  <name>Null Drive</name>
+  <summary>Keep a folder in sync with your own server</summary>
+  <developer id="dev.nullgrid">
+    <name>NULLGRID</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+
+  <description>
+    <p>
+      Null Drive keeps a folder on each of your computers in sync through a
+      server you run yourself: on a NAS, a mini PC, a Raspberry Pi or a VPS.
+      This is the desktop app; it needs a Null Drive server.
+    </p>
+    <ul>
+      <li>Never overwrites: when a file changes in two places, both versions are kept</li>
+      <li>Only the changed part of a file is uploaded</li>
+      <li>Finds the server on your network by itself, or pairs with a one-time code</li>
+      <li>Optional end-to-end encryption: file contents and names are encrypted on your computer</li>
+      <li>Changes show up on your other devices in a second or two</li>
+      <li>Opens Null Search results (nulldrive:// links) from your synced folder</li>
+    </ul>
+    <p>
+      The sign-in is kept in your desktop keyring. Part of Null Grid, with
+      Null Search and Null Notes.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">dev.nullgrid.NullDrive.desktop</launchable>
+  <icon type="stock">dev.nullgrid.NullDrive</icon>
+
+  <url type="homepage">https://nullgrid.dev</url>
+  <url type="bugtracker">https://github.com/Null0Grid/null-drive/issues</url>
+  <url type="vcs-browser">https://github.com/Null0Grid/null-drive</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Syncing: what changed, live</caption>
+      <image>https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/desktop-activity.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>First run: servers found on your network</caption>
+      <image>https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/desktop-setup-server.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Conflicts keep both versions</caption>
+      <image>https://raw.githubusercontent.com/Null0Grid/null-drive/main/docs/screenshots/desktop-conflicts.png</image>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Network</category>
+    <category>FileTransfer</category>
+  </categories>
+  <keywords>
+    <keyword>sync</keyword>
+    <keyword>files</keyword>
+    <keyword>backup</keyword>
+    <keyword>cloud</keyword>
+    <keyword>self-hosted</keyword>
+  </keywords>
+
+  <provides>
+    <binary>nulldrive-desktop</binary>
+  </provides>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <branding>
+    <color type="primary" scheme_preference="light">#a5f3fc</color>
+    <color type="primary" scheme_preference="dark">#0b0d12</color>
+  </branding>
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <!-- @CURRENT_RELEASE@ -->
+    <release version="5.1.0" date="2026-10-21">
+      <description>
+        <p>The desktop app for Linux: AppImage, .deb, .rpm and .tar.gz, for x86_64 and arm64.</p>
+      </description>
+    </release>
+    <release version="5.0.0" date="2026-10-19">
+      <description>
+        <p>Null Grid milestone, shared with Null Search and Null Notes.</p>
+      </description>
+    </release>
+  </releases>
+</component>
