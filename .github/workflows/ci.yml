@@ -375,7 +375,7 @@ jobs:
       - name: Sync end to end (AppImage, then the installed .deb)
         run: |
           xvfb-run -a -s "-screen 0 1280x900x24" dbus-run-session -- \
-            scripts/e2e-linux-desktop.sh dist/NullDrive-0.0.0-ci-x86_64.AppImage bin/nulldrive "$RUNNER_TEMP/linux-desktop.png"
+            scripts/e2e-linux-desktop.sh dist/NullDrive-0.0.0-ci-x86_64.AppImage bin/nulldrive dist/linux-desktop.png
           xvfb-run -a dbus-run-session -- scripts/e2e-linux-desktop.sh /usr/bin/nulldrive-desktop bin/nulldrive
       - uses: actions/upload-artifact@v7
         if: always()
@@ -385,7 +385,10 @@ jobs:
             dist/*.AppImage
             dist/*.rpm
             dist/nulldrive-desktop*
-            ${{ runner.temp }}/linux-desktop.png
+            dist/linux-desktop.png
+          # Everything from dist/ only: a path outside it would make the
+          # artifact keep full paths, and the jobs that download it
+          # wouldn't find the files in dist/.
           retention-days: 14
 
   flatpak:
@@ -432,11 +435,11 @@ jobs:
       - name: Flathub linter (manifest + metadata)
         run: |
           sudo flatpak install --system -y --noninteractive flathub org.flatpak.Builder
-          python3 scripts/flatpak-manifest.py 0.0.0-ci --local dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz > dev.nullgrid.NullDrive.yml
+          python3 scripts/flatpak-manifest.py 0.0.0-ci --local dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz > dist/dev.nullgrid.NullDrive.yml
           tar -xzf dist/nulldrive-desktop_0.0.0-ci_linux_amd64.tar.gz -C "$RUNNER_TEMP"
           meta="$RUNNER_TEMP/nulldrive-desktop_0.0.0-ci_linux_amd64/dev.nullgrid.NullDrive.metainfo.xml"
           appstreamcli validate --no-net "$meta"
-          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dev.nullgrid.NullDrive.yml
+          flatpak run --command=flatpak-builder-lint org.flatpak.Builder manifest dist/dev.nullgrid.NullDrive.yml
           flatpak run --command=flatpak-builder-lint org.flatpak.Builder appstream "$meta"
       - name: Install the .flatpak
         run: sudo flatpak install --system -y --noninteractive dist/NullDrive-0.0.0-ci-x86_64.flatpak
@@ -446,15 +449,15 @@ jobs:
           # The test's home must be outside /tmp, which Flatpak keeps private.
           export E2E_TMP="$RUNNER_TEMP"
           xvfb-run -a -s "-screen 0 1280x900x24" dbus-run-session -- scripts/e2e-linux-desktop.sh \
-            flatpak:dev.nullgrid.NullDrive "$RUNNER_TEMP/nulldrive_0.0.0-ci_linux_amd64/nulldrive" "$RUNNER_TEMP/flatpak.png"
+            flatpak:dev.nullgrid.NullDrive "$RUNNER_TEMP/nulldrive_0.0.0-ci_linux_amd64/nulldrive" dist/flatpak.png
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: NullDrive-flatpak
           path: |
             dist/*.flatpak
-            dev.nullgrid.NullDrive.yml
-            ${{ runner.temp }}/flatpak.png
+            dist/dev.nullgrid.NullDrive.yml
+            dist/flatpak.png
           retention-days: 14
 
   snap:
