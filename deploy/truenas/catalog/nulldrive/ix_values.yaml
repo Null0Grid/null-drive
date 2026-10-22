@@ -1,7 +1,7 @@
 images:
   image:
     repository: ghcr.io/null0grid/null-drive
-    tag: 5.1.0
+    tag: 5.1.1
 
 consts:
   nulldrive_container_name: nulldrive

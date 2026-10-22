@@ -34,10 +34,10 @@ All downloads are on the **[Releases](../../releases)** page.
   Without a registry: `docker load -i nulldrive_<version>_docker_amd64.tar` (or `_arm64`) from the release.
 - **Ubuntu / Debian:** the `.deb` from the release (amd64 or arm64):
   ```
-  sudo apt install ./nulldrive_5.1.0_amd64.deb
+  sudo apt install ./nulldrive_5.1.1_amd64.deb
   ```
   It runs as a `nulldrive` service on port 8080, with data in `/var/lib/nulldrive`.
-- **Snap** (amd64, arm64): `sudo snap install --dangerous ./nulldrive_5.1.0_amd64.snap` from the release. Runs as a service; `sudo snap set nulldrive port=…`.
+- **Snap** (amd64, arm64): `sudo snap install --dangerous ./nulldrive_5.1.1_amd64.snap` from the release. Runs as a service; `sudo snap set nulldrive port=…`.
 - **Arch Linux:** `nulldrive-bin` (and `nulldrive-desktop-bin`) for the AUR; the `PKGBUILD`s are in each release as `nulldrive_<version>_aur.tar.gz`.
 - **NAS:** templates for [CasaOS / ZimaOS](deploy/casaos/Apps/NullDrive/docker-compose.yml), [Unraid](deploy/unraid/nulldrive.xml) and [TrueNAS SCALE](deploy/truenas/docker-compose.yaml), or [Docker Compose](deploy/docker-compose.yml).
 - **Plain binary** for Linux, macOS and Windows (amd64/arm64), checked with `SHA256SUMS.txt`.
@@ -71,14 +71,14 @@ make smoke        # curl walkthrough of the whole API
 ```
 
 Packages:
-- **Server archives** for every OS: `scripts/build-release.sh v5.1.0`.
-- **`.deb`:** `scripts/build-deb.sh 5.1.0`, after the server archives.
-- **Docker image:** `docker build .`, or without a registry, `scripts/build-image-offline.sh 5.1.0`.
+- **Server archives** for every OS: `scripts/build-release.sh v5.1.1`.
+- **`.deb`:** `scripts/build-deb.sh 5.1.1`, after the server archives.
+- **Docker image:** `docker build .`, or without a registry, `scripts/build-image-offline.sh 5.1.1`.
 - **Linux desktop app:** `make linux-desktop` (AppImage, `.rpm`, `.deb`, `.tar.gz` for this machine's architecture; needs `libgtk-3-dev libwebkit2gtk-4.1-dev`). `scripts/e2e-linux-desktop.sh` syncs with it against a real server under Xvfb.
-- **Flatpak, snap, AUR:** `scripts/build-flatpak.sh 5.1.0` (after the Linux desktop app), `scripts/build-snap.sh 5.1.0` (after the server archives; needs snapcraft), `scripts/build-aur.sh 5.1.0 dist --test` (needs both; runs makepkg in an Arch container).
+- **Flatpak, snap, AUR:** `scripts/build-flatpak.sh 5.1.1` (after the Linux desktop app), `scripts/build-snap.sh 5.1.1` (after the server archives; needs snapcraft), `scripts/build-aur.sh 5.1.1 dist --test` (needs both; runs makepkg in an Arch container).
 - **Windows desktop app:** `make windows` (installer, portable zip, winget manifests), then `make msix` (Microsoft Store). Both cross-build from Linux: see [client/README.md](client/README.md).
 
-Pushing a tag like `5.1.0` or `v5.1.0` runs [the release workflow](.github/workflows/release.yml), which tests and builds all of these and attaches them to the GitHub release. For a tag that already exists: Actions → Release → Run workflow.
+Pushing a tag like `5.1.1` or `v5.1.1` runs [the release workflow](.github/workflows/release.yml), which tests and builds all of these and attaches them to the GitHub release. For a tag that already exists: Actions → Release → Run workflow.
 
 Configuration is a handful of environment variables (`NULLDRIVE_DATA_DIR`, `NULLDRIVE_PORT`, …): [docs/INSTALL.md](docs/INSTALL.md#configuration). The REST API is in [docs/API.md](docs/API.md).
 

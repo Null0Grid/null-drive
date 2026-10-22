@@ -34,8 +34,10 @@ python3 scripts/flatpak-manifest.py "$VERSION" --local "$TGZ" >"$WORK/$APP_ID.ym
 cat "$WORK/$APP_ID.yml"
 
 # --disable-rofiles-fuse: no FUSE in containers and CI runners.
+# --state-dir: its cache stays in the temporary folder, not .flatpak-builder/
+# in the repository (where a root build would leave it root-owned).
 flatpak-builder "$SCOPE" --install-deps-from=flathub --disable-rofiles-fuse --force-clean \
-  --default-branch=stable --repo="$WORK/repo" "$WORK/build" "$WORK/$APP_ID.yml"
+  --default-branch=stable --state-dir="$WORK/state" --repo="$WORK/repo" "$WORK/build" "$WORK/$APP_ID.yml"
 flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
   "$WORK/repo" "$OUT/NullDrive-${VERSION}-${FP_ARCH}.flatpak" "$APP_ID" stable
 ls -la "$OUT/NullDrive-${VERSION}-${FP_ARCH}.flatpak"

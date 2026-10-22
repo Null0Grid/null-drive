@@ -85,6 +85,11 @@
 
   <releases>
     <!-- @CURRENT_RELEASE@ -->
+    <release version="5.1.1" date="2026-10-22">
+      <description>
+        <p>Now also as a Flatpak. Start on login asks the desktop for permission once.</p>
+      </description>
+    </release>
     <release version="5.1.0" date="2026-10-21">
       <description>
         <p>The desktop app for Linux: AppImage, .deb, .rpm and .tar.gz, for x86_64 and arm64.</p>

@@ -3,7 +3,7 @@
 # questions.yaml and templates/ are copied from a similar single-container
 # community app and adapted, and lib_version/lib_version_hash are set by
 # their tooling (`devbox run copy-lib`).
-app_version: 5.1.0
+app_version: 5.1.1
 capabilities: []
 categories:
   - productivity

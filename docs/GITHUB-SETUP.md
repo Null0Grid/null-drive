@@ -16,13 +16,13 @@ The repository is [Null0Grid/null-drive](https://github.com/Null0Grid/null-drive
 
 - [ ] CI is green on `main` (Actions tab).
 - [ ] The version is the same in `client/wails.json` (`info.productVersion`), `ui/package.json` and `client/frontend/package.json`. CI checks this, and the release refuses a tag that doesn't match.
-- [ ] Create the release: **Releases → Draft a new release → tag `5.1.0` (new tag) → target `main` → Publish**. Or push a tag: `git tag 5.1.0 && git push origin 5.1.0`. A `v` prefix works too.
+- [ ] Create the release: **Releases → Draft a new release → tag `5.1.1` (new tag) → target `main` → Publish**. Or push a tag: `git tag 5.1.1 && git push origin 5.1.1`. A `v` prefix works too.
 - [ ] Watch **Actions → Release**: version check → CI and security on the tag → image, server packages, desktop app → files attached to the release; the Store package is a separate artifact of the run.
 - [ ] For a tag that already exists (or a failed run): **Actions → Release → Run workflow**, and type the tag.
 - [ ] **Make the container package public** (new GHCR packages start private): the org's **Packages** → `null-drive` → **Package settings** → *Change visibility* → **Public**.
 - [ ] Check it:
   ```bash
-  docker run --rm ghcr.io/null0grid/null-drive:5.1.0 version   # prints v5.1.0 and the commit
+  docker run --rm ghcr.io/null0grid/null-drive:5.1.1 version   # prints v5.1.1 and the commit
   ```
   The release should have 6 server archives, 2 server `.deb`, 2 Docker archives, the Windows installer and portable zip, 3 winget manifests, the Linux desktop app for x86_64 and arm64 (2 AppImages, 2 `.rpm`, 2 `.deb`, 2 `.tar.gz`, 2 `.flatpak`), the Flathub manifest `dev.nullgrid.NullDrive.yml`, 2 server snaps, the AUR packages `nulldrive_<v>_aur.tar.gz` and `SHA256SUMS.txt`. The last step of the run fails if any of them didn't get attached. Publishing to Flathub, the Snap Store and the AUR: [PACKAGING.md](PACKAGING.md).
 
@@ -30,7 +30,7 @@ The repository is [Null0Grid/null-drive](https://github.com/Null0Grid/null-drive
 
 | Failure | Likely cause |
 |---|---|
-| `tag 5.1.1 but client/wails.json says 5.1.0` | Bump the three version fields, commit, and tag that commit. |
+| `tag 5.1.2 but client/wails.json says 5.1.1` | Bump the three version fields, commit, and tag that commit. |
 | `denied: permission_denied` / `403` pushing to ghcr.io | Workflow permissions were tightened below the default, or the package belongs to another repo: Package settings → *Manage Actions access* → add this repo with **Write**. |
 | `resource not accessible by integration` when attaching files | `contents: write` is blocked at the organization level: allow it for workflows in the org settings. |
 | `go mod tidy -diff` fails in CI | A dependency changed without `go mod tidy`: run it in the root and in `client/`, and commit `go.mod`/`go.sum`. |
