@@ -18,6 +18,6 @@ The full threat model (a stolen laptop, a compromised server, the network, other
 
 ## Reporting a vulnerability
 
-Please don't open a public issue. Email **luc.honz@proton.me** with what an attacker can do, the steps to reproduce, and the version (`/api/v1/health` or the web app's sidebar footer). You'll get an answer within a few days. Please allow time for a fix before publishing details.
+Please don't open a public issue. Email **volosteele55@proton.me** with what an attacker can do, the steps to reproduce, and the version (`/api/v1/health` or the web app's sidebar footer). You'll get an answer within a few days. Please allow time for a fix before publishing details.
 
 Security fixes go into the latest release only.
