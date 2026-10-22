@@ -121,8 +121,8 @@ class MockBackend {
   Conflicts() { return [...this.conflictList]; }
   /** Set by tests to simulate an empty network. */
   discovered: DiscoveredServer[] = [
-    { name: 'nas', url: 'http://192.168.1.20:8080', address: '192.168.1.20', version: 'v0.5.0', setup_done: true, addrs: ['192.168.1.20', 'fd00::20'] },
-    { name: 'attic-pi', url: 'http://192.168.1.41:8080', address: '192.168.1.41', version: 'v0.5.0', setup_done: false, addrs: ['192.168.1.41'] },
+    { name: 'nas', url: 'http://192.168.1.20:8080', address: '192.168.1.20', version: __DEMO_VERSION__, setup_done: true, addrs: ['192.168.1.20', 'fd00::20'] },
+    { name: 'attic-pi', url: 'http://192.168.1.41:8080', address: '192.168.1.41', version: __DEMO_VERSION__, setup_done: false, addrs: ['192.168.1.41'] },
   ];
   Discover() {
     return new Promise<DiscoveredServer[]>((r) => setTimeout(() => r(structuredClone(this.discovered)), 300));
@@ -130,7 +130,7 @@ class MockBackend {
   TestServer(url: string, pin = '') {
     if (!url.trim()) throw 'enter the server address';
     const u = (url.includes('://') ? url : `http://${url}`).replace(/\/$/, '');
-    const info: ServerInfo = { url: u, version: 'v0.5.0' };
+    const info: ServerInfo = { url: u, version: __DEMO_VERSION__ };
     if (u.startsWith('https://') && u.includes('.lan')) {
       // Demo: a self-signed homelab certificate.
       info.cert = {

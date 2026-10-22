@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { fileURLToPath } from 'node:url';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const lib = fileURLToPath(new URL('../../ui/src/lib', import.meta.url));
 
@@ -27,6 +27,9 @@ export default defineConfig({
     // Resolve them from this app's own node_modules instead.
     dedupe: ['svelte', '@fontsource/silkscreen', '@fontsource/vt323', '@fontsource/jetbrains-mono'],
   },
+  // The demo backend (bridge.ts, browser preview only) shows this version
+  // for the servers it pretends to find.
+  define: { __DEMO_VERSION__: JSON.stringify('v' + JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) },
   server: {
     fs: { allow: ['..', '../../ui'] },
   },

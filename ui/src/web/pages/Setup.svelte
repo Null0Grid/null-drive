@@ -5,6 +5,10 @@
   import Input from '../../lib/components/Input.svelte';
   import Icon from '../../lib/components/Icon.svelte';
   import ProgressBar from '../../lib/components/ProgressBar.svelte';
+
+  // Where the desktop apps are published (the last step links to them).
+  const STORE_URL = 'https://apps.microsoft.com/detail/9P3NQGJ8ZZMG';
+  const RELEASES_URL = 'https://github.com/Null0Grid/null-drive/releases/latest';
   import PasswordStrength from '../../lib/components/PasswordStrength.svelte';
   import { ApiError } from '../../lib/api/client';
   import type { SystemInfo } from '../../lib/api/types';
@@ -122,7 +126,7 @@
           <ul class="points">
             <li><Icon name="disk" /> Files are stored on this machine, in a folder you control.</li>
             <li><Icon name="refresh" /> Edits from two devices never silently overwrite each other.</li>
-            <li><Icon name="laptop" /> Use it in the browser now; desktop sync apps are coming.</li>
+            <li><Icon name="laptop" /> Use it in the browser, and sync folders with the desktop app for Windows and Linux.</li>
           </ul>
           <div class="actions">
             <Button variant="primary" size="lg" icon="arrow-right" onclick={() => go('account')}>Get started</Button>
@@ -250,8 +254,8 @@
           <ul class="platforms">
             <li>
               <Icon name="window" size={22} />
-              <div><strong>Windows</strong><span>Microsoft Store · winget</span></div>
-              <Button size="sm" disabled title="Available in a future release">Coming soon</Button>
+              <div><strong>Windows</strong><span>Microsoft Store · installer</span></div>
+              <Button size="sm" icon="download" onclick={() => open(STORE_URL, '_blank', 'noopener')}>Get it</Button>
             </li>
             <li>
               <Icon name="laptop" size={22} />
@@ -260,8 +264,8 @@
             </li>
             <li>
               <Icon name="terminal" size={22} />
-              <div><strong>Linux</strong><span>AppImage · .deb</span></div>
-              <Button size="sm" disabled title="Available in a future release">Coming soon</Button>
+              <div><strong>Linux</strong><span>AppImage · Flatpak · .deb · .rpm</span></div>
+              <Button size="sm" icon="download" onclick={() => open(RELEASES_URL, '_blank', 'noopener')}>Download</Button>
             </li>
           </ul>
           <div class="pairing">

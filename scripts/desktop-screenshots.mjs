@@ -34,7 +34,8 @@ for (let i = 0; ; i++) {
   await new Promise((r) => setTimeout(r, 250));
 }
 
-const browser = await chromium.launch();
+// PW_CHROMIUM=/path/to/chrome uses that Chromium instead of Playwright's own.
+const browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined });
 try {
   const page = await browser.newPage({ viewport: { width: 980, height: 700 }, deviceScaleFactor: 2, colorScheme: 'dark' });
   const shot = async (name, full = false) => {
