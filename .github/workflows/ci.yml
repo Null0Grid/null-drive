@@ -419,7 +419,7 @@ jobs:
         run: |
           for v in 52 51 50 49 48; do
             if flatpak remote-info --system flathub "runtime/org.gnome.Platform/x86_64/$v" >/dev/null 2>&1; then
-              echo "org.gnome.Platform//$v: available"
+              echo "::notice::org.gnome.Platform//$v is on Flathub"
             fi
           done
       - name: Build the .flatpak
