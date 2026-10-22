@@ -420,7 +420,10 @@ jobs:
             fi
           done
       - name: Build the .flatpak
-        run: sudo FLATPAK_SCOPE=system scripts/build-flatpak.sh 0.0.0-ci dist
+        run: |
+          set -o pipefail
+          sudo FLATPAK_SCOPE=system scripts/build-flatpak.sh 0.0.0-ci dist 2>&1 | tee "$RUNNER_TEMP/out.log" ||
+            { tail -n 30 "$RUNNER_TEMP/out.log" | sed 's/^/::error::/'; exit 1; }
       - name: The runtime has WebKitGTK 4.1
         run: |
           rv=$(python3 -c "import re;print(re.search(r'RUNTIME_VERSION = .*\"(\d+)\"', open('scripts/flatpak-manifest.py').read()).group(1))")
@@ -469,7 +472,10 @@ jobs:
       - name: Install snapcraft
         run: sudo snap install snapcraft --classic
       - name: Build the .snap
-        run: sudo scripts/build-snap.sh 0.0.0-ci dist
+        run: |
+          set -o pipefail
+          sudo scripts/build-snap.sh 0.0.0-ci dist 2>&1 | tee "$RUNNER_TEMP/out.log" ||
+            { tail -n 40 "$RUNNER_TEMP/out.log" | sed 's/^/::error::/'; exit 1; }
       - name: Install it; the service starts and takes its settings
         run: |
           fail() { echo "::error::snap: $*"; sudo snap logs nulldrive -n 40 | sed 's/^/::error::log: /'; exit 1; }
@@ -511,7 +517,10 @@ jobs:
           name: server-linux
           path: dist
       - name: PKGBUILD + .SRCINFO, built and installed with pacman
-        run: scripts/build-aur.sh 0.0.0-ci dist --test
+        run: |
+          set -o pipefail
+          scripts/build-aur.sh 0.0.0-ci dist --test 2>&1 | tee "$RUNNER_TEMP/out.log" ||
+            { tail -n 30 "$RUNNER_TEMP/out.log" | sed 's/^/::error::/'; exit 1; }
       - uses: actions/upload-artifact@v7
         with:
           name: NullDrive-aur
