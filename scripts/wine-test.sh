@@ -40,6 +40,8 @@ KEY='HKCU\Software\Classes\nulldrive'
 pass=0
 fail=0
 ok() { if [ "$1" = 0 ]; then echo "ok   $2"; pass=$((pass + 1)); else echo "FAIL $2"; fail=$((fail + 1)); fi; }
+# is <test...>: prints 0 if the test passes, 1 if not (for ok).
+is() { if "$@"; then echo 0; else echo 1; fi; }
 until_() { for _ in $(seq 80); do eval "$1" && return 0; sleep 0.5; done; return 1; }
 # Wine's reg prints "Unable to find..." on stdout: drop it.
 q() { wine reg query "$KEY" /s 2>/dev/null | tr -d '\r' | grep -v '^reg: Unable to find'; }
@@ -71,8 +73,7 @@ for form in "nulldrive://open?id=$ID" "--url nulldrive://open?id=$ID" "--forget 
   wait $RC 2>/dev/null
   echo "$got" | grep -qF "\"Args\":[\"--url\",\"nulldrive://open?id=$ID\"]"
   ok $? "running copy receives only the link: $form"
-  [ "$rc" = 0 ]
-  ok $? "  and the new process exits at once"
+  ok "$(is [ "$rc" = 0 ])" "  and the new process exits at once"
 done
 
 # A click: Windows runs the registered command. (Windows resolves schemes
@@ -88,8 +89,7 @@ L="$WINEPREFIX/drive_c/launched.json"
 rm -f "$L"
 wine "$TOOLS/shellexec.exe" "nulldrive://open?id=$ID"
 until_ "[ -s '$L' ]"
-[ "$(cat "$L" 2>/dev/null)" = "[\"--url\",\"nulldrive://open?id=$ID\"]" ]
-ok $? "a clicked link launches NullDrive.exe --url <link>"
+ok "$(is [ "$(cat "$L" 2>/dev/null)" = "[\"--url\",\"nulldrive://open?id=$ID\"]" ])" "a clicked link launches NullDrive.exe --url <link>"
 rm -f "$L"
 wine "$TOOLS/shellexec.exe" 'nulldrive://open?id=x" --forget "y'
 until_ "[ -s '$L' ]"
