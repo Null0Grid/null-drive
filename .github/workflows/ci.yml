@@ -33,7 +33,7 @@ concurrency:
 jobs:
   go:
     name: Go tests + lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -69,7 +69,7 @@ jobs:
 
   ui:
     name: UI tests + type check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ui
@@ -90,7 +90,7 @@ jobs:
 
   e2e:
     name: Build, smoke + Playwright e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [go, ui]
     steps:
       - uses: actions/checkout@v7
@@ -130,7 +130,7 @@ jobs:
 
   docker:
     name: Docker build (amd64 + arm64, no push)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -206,7 +206,7 @@ jobs:
 
   windows-installer:
     name: Windows installer (cross-built on Linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -582,7 +582,7 @@ jobs:
 
   actionlint:
     name: Lint workflows, versions, scripts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:

@@ -9,8 +9,8 @@ BIN="${1:-bin/nulldrive}"
 PORT="${NULLDRIVE_SMOKE_PORT:-18080}"
 BASE="http://127.0.0.1:${PORT}/api/v1"
 
-command -v curl >/dev/null || { echo "curl is required"; exit 1; }
-command -v jq   >/dev/null || { echo "jq is required"; exit 1; }
+command -v curl >/dev/null || { echo "::error::smoke.sh: curl is required"; exit 1; }
+command -v jq   >/dev/null || { echo "::error::smoke.sh: jq is required"; exit 1; }
 [[ -x "$BIN" ]] || { echo "binary $BIN not found; run 'make build' first"; exit 1; }
 
 DATA="$(mktemp -d)"
@@ -23,7 +23,7 @@ trap cleanup EXIT
 
 step() { printf '\n\033[1;35m==> %s\033[0m\n' "$*"; }
 ok()   { printf '    \033[32mok\033[0m %s\n' "$*"; }
-fail() { printf '    \033[31mFAIL\033[0m %s\n' "$*"; echo "--- server log ---"; cat "$LOG"; exit 1; }
+fail() { printf '    \033[31mFAIL\033[0m %s\n' "$*"; [[ -n "${GITHUB_ACTIONS:-}" ]] && echo "::error::smoke.sh: $*"; echo "--- server log ---"; cat "$LOG"; exit 1; }
 
 # expect STATUS METHOD PATH [curl args...] -> body in $BODY, headers in $HDRS
 expect() {
