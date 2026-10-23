@@ -1,8 +1,9 @@
 name: Release
 
 # Push a tag that matches the app version (client/wails.json
-# info.productVersion), with or without a "v": 5.0.1 or v5.0.1. Or, for a tag
-# that already exists: Actions → Release → Run workflow, and type the tag.
+# info.productVersion), with or without a "v": 5.0.1 or v5.0.1. Or Actions →
+# Release → Run workflow, pick the branch (main) and type the tag: an existing
+# tag is rebuilt, a new one is created on that branch's commit.
 #
 # Runs the full CI and security checks on that tag, then builds everything
 # Null Drive ships and attaches it to the release for that tag (an existing
@@ -28,7 +29,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to build and attach to its release (e.g. 5.0.0)"
+        description: "Tag to release, e.g. 5.1.1 (a new tag is created on the branch picked above)"
         required: true
 
 env:
@@ -49,10 +50,31 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       minor: ${{ steps.v.outputs.minor }}
       prerelease: ${{ steps.v.outputs.prerelease }}
+    permissions:
+      contents: write # to create the tag when Run workflow names a new one
     steps:
+      # Run workflow with a tag that doesn't exist yet: build the commit it
+      # was started from (the branch picked, normally main) and create the tag
+      # there once the versions check out. Tags made with the workflow's token
+      # don't start another run.
+      - name: Does the tag exist?
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --silent 2>/dev/null; then
+            echo "ref=$TAG" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            echo "Tag $TAG doesn't exist yet: building $GITHUB_REF_NAME ($GITHUB_SHA) and tagging it."
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "create=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::tag $TAG not found"
+            exit 1
+          fi
       - uses: actions/checkout@v7
         with:
-          ref: ${{ env.TAG }}
+          ref: ${{ steps.tag.outputs.ref }}
       - id: v
         run: |
           app=$(python3 -c "import json;print(json.load(open('client/wails.json'))['info']['productVersion'])")
@@ -70,6 +92,11 @@ jobs:
             echo "minor=$(echo "$app" | cut -d. -f1,2)"
             if [[ "$app" == *-* ]]; then echo "prerelease=true"; else echo "prerelease=false"; fi
           } >> "$GITHUB_OUTPUT"
+      - name: Create the tag
+        if: steps.tag.outputs.create == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$TAG" -f "sha=$GITHUB_SHA" --silent
 
   ci:
     needs: version
